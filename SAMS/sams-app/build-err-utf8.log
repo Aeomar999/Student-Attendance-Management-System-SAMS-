@@ -1,0 +1,443 @@
+﻿
+> sams-app@0.1.0 build
+> next build
+
+node.exe : ΓÜá 
+Warning: Next.js 
+inferred your 
+workspace root, but 
+it may not be correct.
+At line:1 char:1
++ & "C:\Program Files\
+nodejs/node.exe" "C:\U
+sers\Jerry\AppData\Roa
+ming\ ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : 
+NotSpecified: (Γ    
+Üá Warning: Ne...not  
+   be 
+correct.:String) [    
+], RemoteException
+    + 
+FullyQualifiedError   
+ Id : 
+NativeCommandErr    or
+ 
+ We detected multiple 
+lockfiles and 
+selected the 
+directory of C:\Users\
+Jerry\package-lock.jso
+n as the root 
+directory.
+ To silence this 
+warning, set 
+`turbopack.root` in 
+your Next.js config, 
+or consider removing 
+one of the lockfiles 
+if it's not needed.
+   See https://nextjs.
+org/docs/app/api-refer
+ence/config/next-confi
+g-js/turbopack#root-di
+rectory for more 
+information.
+ Detected additional 
+lockfiles: 
+   * C:\Users\Jerry\De
+sktop\PROJECT 2026\SAM
+S\SAMS\sams-app\packag
+e-lock.json
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local, .env
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+  ┬╖ serverActions
+
+ΓÜá The "middleware" 
+file convention is 
+deprecated. Please 
+use "proxy" instead. 
+Learn more: https://ne
+xtjs.org/docs/messages
+/middleware-to-proxy
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack 
+build failed with 3 
+errors:
+./Desktop/PROJECT 2026
+/SAMS/SAMS/sams-app/no
+de_modules/@node-rs/ar
+gon2/browser.js:1:1
+Module not found: 
+Can't resolve '@node-r
+s/argon2-wasm32-wasi'
+[0m[31m[1m>[22m[3
+9m[90m 1 |[39m 
+[36mexport[39m 
+[33m*[39m 
+[36mfrom[39m [32m'@
+node-rs/argon2-wasm32-
+wasi'[39m
+ [90m   |[39m [31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[
+31m[1m^[22m[39m
+ [90m 2 |[39m[0m
+
+
+
+Import trace:
+  Edge Middleware:
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/node_modules/@node-r
+s/argon2/browser.js
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/password.ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/auth.config.
+ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/middleware.ts
+
+https://nextjs.org/doc
+s/messages/module-not-
+found
+
+
+./Desktop/PROJECT 2026
+/SAMS/SAMS/sams-app/sr
+c/lib/password.ts:1:1
+Export hash doesn't 
+exist in target module
+[0m[31m[1m>[22m[3
+9m[90m 1 |[39m 
+[36mimport[39m { 
+hash[33m,[39m 
+verify } 
+[36mfrom[39m [32m'@
+node-rs/argon2'[39m[
+33m;[39m
+ [90m   |[39m [31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m
+ [90m 2 |[39m
+ [90m 3 |[39m 
+[36mexport[39m 
+[36masync[39m 
+[36mfunction[39m has
+hPassword(password[33
+m:[39m 
+string)[33m:[39m [3
+3mPromise[39m[33m<[
+39m[33mstring[39m[3
+3m>[39m {
+ [90m 4 |[39m     
+[36mreturn[39m hash(
+password[33m,[39m 
+{[0m
+
+The export hash was 
+not found in module [p
+roject]/Desktop/PROJEC
+T 2026/SAMS/SAMS/sams-
+app/node_modules/@node
+-rs/argon2/browser.js 
+[middleware-edge] 
+(ecmascript).
+The module has no 
+exports at all.
+All exports of the 
+module are statically 
+known (It doesn't 
+have dynamic 
+exports). So it's 
+known statically that 
+the requested export 
+doesn't exist.
+
+Import traces:
+  Edge Middleware:
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/password.ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/auth.config.
+ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/middleware.ts
+
+  Server Component:
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/password.ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/actions/users.ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/app/(dashboard)/
+users/page.tsx
+
+  App Route:
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/password.ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/auth.config.
+ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/auth.ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/app/api/auth/[..
+.nextauth]/route.ts
+
+
+./Desktop/PROJECT 2026
+/SAMS/SAMS/sams-app/sr
+c/lib/password.ts:1:1
+Export verify doesn't 
+exist in target module
+[0m[31m[1m>[22m[3
+9m[90m 1 |[39m 
+[36mimport[39m { 
+hash[33m,[39m 
+verify } 
+[36mfrom[39m [32m'@
+node-rs/argon2'[39m[
+33m;[39m
+ [90m   |[39m [31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m
+ [90m 2 |[39m
+ [90m 3 |[39m 
+[36mexport[39m 
+[36masync[39m 
+[36mfunction[39m has
+hPassword(password[33
+m:[39m 
+string)[33m:[39m [3
+3mPromise[39m[33m<[
+39m[33mstring[39m[3
+3m>[39m {
+ [90m 4 |[39m     
+[36mreturn[39m hash(
+password[33m,[39m 
+{[0m
+
+The export verify was 
+not found in module [p
+roject]/Desktop/PROJEC
+T 2026/SAMS/SAMS/sams-
+app/node_modules/@node
+-rs/argon2/browser.js 
+[middleware-edge] 
+(ecmascript).
+The module has no 
+exports at all.
+All exports of the 
+module are statically 
+known (It doesn't 
+have dynamic 
+exports). So it's 
+known statically that 
+the requested export 
+doesn't exist.
+
+Import traces:
+  Edge Middleware:
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/password.ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/auth.config.
+ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/middleware.ts
+
+  Server Component:
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/password.ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/actions/users.ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/app/(dashboard)/
+users/page.tsx
+
+  App Route:
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/password.ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/auth.config.
+ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/lib/auth.ts
+    ./Desktop/PROJECT 
+2026/SAMS/SAMS/sams-ap
+p/src/app/api/auth/[..
+.nextauth]/route.ts
+
+
+    at 
+./Desktop/PROJECT 2026
+/SAMS/SAMS/sams-app/no
+de_modules/ (node-rs/a
+rgon2/browser.js:1:1)
+    at <unknown> (http
+s://nextjs.org/docs/me
+ssages/module-not-foun
+d)
+    at <unknown> 
+(./Desktop/PROJECT 202
+6/SAMS/SAMS/sams-app/s
+rc/lib/password.ts:1:1
+)
+    at <unknown> 
+(./Desktop/PROJECT 202
+6/SAMS/SAMS/sams-app/s
+rc/lib/password.ts:1:1
+)

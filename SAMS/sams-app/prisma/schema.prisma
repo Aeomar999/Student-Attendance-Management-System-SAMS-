@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  LECTURER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String?    @map("password_hash")
+  firstName    String     @map("first_name")
+  lastName     String     @map("last_name")
+  role         UserRole   @default(LECTURER)
+  status       UserStatus @default(ACTIVE)
+
+  mfaEnabled     Boolean   @default(false) @map("mfa_enabled")
+  failedAttempts Int       @default(0) @map("failed_attempts")
+  lockedUntil    DateTime? @map("locked_until")
+  lastLoginAt    DateTime? @map("last_login_at")
+
+  institutionId String? @map("institution_id")
+  departmentId  String? @map("department_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  sessions Session[]
+  accounts Account[]
+
+  @@index([email])
+  @@index([institutionId])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model SetupToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([token])
+  @@index([email])
+  @@map("setup_tokens")
+}
+
+model Student {
+  id           String     @id @default(cuid())
+  studentId    String     @unique @map("student_id")
+  firstName    String     @map("first_name")
+  lastName     String     @map("last_name")
+  email        String     @unique
+  yearOfStudy  Int        @map("year_of_study")
+  program      String
+  status       UserStatus @default(ACTIVE)
+  faceEnrolled Boolean    @default(false) @map("face_enrolled")
+
+  institutionId String @map("institution_id")
+  departmentId  String @map("department_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([studentId])
+  @@index([email])
+  @@map("students")
+}
+
+model AttendanceSession {
+  id          String    @id @default(cuid())
+  courseId    String    @map("course_id")
+  lecturerId  String    @map("lecturer_id")
+  sessionDate DateTime  @map("session_date") @db.Date
+  startTime   DateTime  @map("start_time")
+  endTime     DateTime? @map("end_time")
+  status      String    @default("SCHEDULED")
+
+  totalPresent Int @default(0) @map("total_present")
+  totalAbsent  Int @default(0) @map("total_absent")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([courseId])
+  @@index([lecturerId])
+  @@index([sessionDate])
+  @@map("attendance_sessions")
+}
+
+model AttendanceRecord {
+  id              String    @id @default(cuid())
+  sessionId       String    @map("session_id")
+  studentId       String    @map("student_id")
+  status          String    @default("ABSENT")
+  recognizedAt    DateTime? @map("recognized_at")
+  confidenceScore Float?    @map("confidence_score")
+  isManual        Boolean   @default(false) @map("is_manual")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([sessionId, studentId])
+  @@index([sessionId])
+  @@index([studentId])
+  @@map("attendance_records")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?  @map("user_id")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String?  @map("entity_id")
+  oldValues  String?  @map("old_values")
+  newValues  String?  @map("new_values")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([entityType])
+  @@map("audit_logs")
+}
