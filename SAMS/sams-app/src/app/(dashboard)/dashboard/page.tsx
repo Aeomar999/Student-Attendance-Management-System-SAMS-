@@ -1,27 +1,49 @@
 import { Metadata } from "next"
 import { withDb } from "@/lib/db"
+import { unstable_cache } from "next/cache"
 
 export const metadata: Metadata = {
     title: "Dashboard Overview | SAMS",
     description: "Overview of system status and quick actions",
 }
 
-async function getDashboardData() {
-    try {
-        const data = await withDb(async (db) => {
-            const [students, staff, sessions, logs, faceEnrolled, presentRecords, totalRecords] = await Promise.all([
-                db.query("SELECT COUNT(*) FROM students WHERE status='ACTIVE'"),
-                db.query("SELECT COUNT(*) FROM users WHERE status='ACTIVE'"),
-                db.query("SELECT COUNT(*) FROM attendance_sessions"),
-                db.query("SELECT COUNT(*) FROM audit_logs"),
-                db.query("SELECT COUNT(*) FROM students WHERE face_enrolled=true"),
-                db.query("SELECT COUNT(*) FROM attendance_records WHERE status='PRESENT'"),
-                db.query("SELECT COUNT(*) FROM attendance_records"),
-            ])
+export const dynamic = "force-dynamic"
 
-            // Upcoming / recent sessions (today and future, limit 5)
-            const upcoming = await db.query(`
-                SELECT
+const getCachedStats = unstable_cache(
+    async () => {
+        return withDb(async (db) => {
+            const result = await db.query(`
+                SELECT 
+                    (SELECT COUNT(*) FROM students WHERE status='ACTIVE') as "totalStudents",
+                    (SELECT COUNT(*) FROM users WHERE status='ACTIVE') as "totalStaff",
+                    (SELECT COUNT(*) FROM attendance_sessions) as "totalSessions",
+                    (SELECT COUNT(*) FROM audit_logs) as "totalAuditLogs",
+                    (SELECT COUNT(*) FROM students WHERE face_enrolled=true) as "faceEnrolled",
+                    (SELECT COUNT(*) FROM attendance_records WHERE status='PRESENT') as "presentRecords",
+                    (SELECT COUNT(*) FROM attendance_records) as "totalRecords"
+            `)
+            const row = result.rows[0]
+            const totalRec = parseInt(row.totalRecords)
+            const presentRec = parseInt(row.presentRecords)
+            return {
+                totalStudents: parseInt(row.totalStudents),
+                totalStaff: parseInt(row.totalStaff),
+                totalSessions: parseInt(row.totalSessions),
+                totalAuditLogs: parseInt(row.totalAuditLogs),
+                faceEnrolled: parseInt(row.faceEnrolled),
+                attendanceRate: totalRec > 0 ? Math.round(presentRec / totalRec * 100) : 0,
+            }
+        })
+    },
+    ["dashboard-stats"],
+    { revalidate: 60 }
+)
+
+const getCachedUpcomingSessions = unstable_cache(
+    async () => {
+        return withDb(async (db) => {
+            const result = await db.query(`
+                SELECT 
                     s.id, c.code AS "courseCode", c.name AS "courseName",
                     s.session_date AS "sessionDate",
                     s.start_time AS "startTime", s.status
@@ -31,9 +53,17 @@ async function getDashboardData() {
                 ORDER BY s.session_date ASC, s.start_time ASC
                 LIMIT 5
             `)
+            return result.rows
+        })
+    },
+    ["upcoming-sessions"],
+    { revalidate: 60 }
+)
 
-            // Recent audit log activity
-            const activity = await db.query(`
+const getCachedRecentActivity = unstable_cache(
+    async () => {
+        return withDb(async (db) => {
+            const result = await db.query(`
                 SELECT al.action, al.entity_type AS "entityType", al.created_at AS "createdAt",
                     CONCAT(u.first_name, ' ', u.last_name) AS "userName"
                 FROM audit_logs al
@@ -41,21 +71,25 @@ async function getDashboardData() {
                 ORDER BY al.created_at DESC
                 LIMIT 6
             `)
-
-            const totalRec = parseInt(totalRecords.rows[0].count)
-            const presentRec = parseInt(presentRecords.rows[0].count)
-            return {
-                totalStudents: parseInt(students.rows[0].count),
-                totalStaff: parseInt(staff.rows[0].count),
-                totalSessions: parseInt(sessions.rows[0].count),
-                totalAuditLogs: parseInt(logs.rows[0].count),
-                faceEnrolled: parseInt(faceEnrolled.rows[0].count),
-                attendanceRate: totalRec > 0 ? Math.round(presentRec / totalRec * 100) : 0,
-                upcomingSessions: upcoming.rows,
-                recentActivity: activity.rows,
-            }
+            return result.rows
         })
-        return data
+    },
+    ["recent-activity"],
+    { revalidate: 30 }
+)
+
+async function getDashboardData() {
+    try {
+        const [stats, upcomingSessions, recentActivity] = await Promise.all([
+            getCachedStats(),
+            getCachedUpcomingSessions(),
+            getCachedRecentActivity(),
+        ])
+        return {
+            ...stats,
+            upcomingSessions,
+            recentActivity,
+        }
     } catch {
         return {
             totalStudents: 0, totalStaff: 0, totalSessions: 0, totalAuditLogs: 0,

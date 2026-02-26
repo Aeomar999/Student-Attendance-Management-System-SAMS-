@@ -42,7 +42,10 @@ model User {
   accounts Account[]
 
   @@index([email])
+  @@index([status])
+  @@index([role])
   @@index([institutionId])
+  @@index([departmentId])
   @@map("users")
 }
 
@@ -107,6 +110,11 @@ model Student {
 
   @@index([studentId])
   @@index([email])
+  @@index([status])
+  @@index([program])
+  @@index([faceEnrolled])
+  @@index([institutionId])
+  @@index([departmentId])
   @@map("students")
 }
 
@@ -128,6 +136,8 @@ model AttendanceSession {
   @@index([courseId])
   @@index([lecturerId])
   @@index([sessionDate])
+  @@index([status])
+  @@index([courseId, sessionDate])
   @@map("attendance_sessions")
 }
 
@@ -146,6 +156,8 @@ model AttendanceRecord {
   @@unique([sessionId, studentId])
   @@index([sessionId])
   @@index([studentId])
+  @@index([status])
+  @@index([sessionId, status])
   @@map("attendance_records")
 }
 
@@ -161,5 +173,7 @@ model AuditLog {
 
   @@index([userId])
   @@index([entityType])
+  @@index([createdAt])
+  @@index([action])
   @@map("audit_logs")
 }
