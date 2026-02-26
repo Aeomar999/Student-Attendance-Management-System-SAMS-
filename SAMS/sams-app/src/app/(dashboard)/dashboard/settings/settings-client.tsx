@@ -108,7 +108,7 @@ export function SettingsClient({ user }: Props) {
         }
         setMfaStatusLoading(true)
         try {
-            const result = await enableMfa(mfaCode)
+            const result = await enableMfa(mfaCode, mfaSetup?.secret)
             if (result.success) {
                 toast.success("Two-Factor Authentication enabled")
                 setMfaEnabled(true)

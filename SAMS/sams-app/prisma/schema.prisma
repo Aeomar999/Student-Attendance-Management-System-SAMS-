@@ -192,6 +192,7 @@ model Course {
   description String?
   semester    String?
   capacity    Int      @default(0)
+  creditHours Int      @default(3) @map("credit_hours")
   status      String   @default("ACTIVE")
 
   departmentId  String @map("department_id")
@@ -288,6 +289,7 @@ model AuditLog {
   entityId   String?  @map("entity_id")
   oldValues  String?  @map("old_values")
   newValues  String?  @map("new_values")
+  details    String?  
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([userId])

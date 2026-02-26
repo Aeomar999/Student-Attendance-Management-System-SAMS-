@@ -5,6 +5,8 @@ import { withDb } from "@/lib/db"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import { verify, hash } from "@node-rs/argon2"
+import * as OTPAuth from "otpauth"
+import * as QRCode from "qrcode"
 
 async function requireAuth() {
     const session = await auth()
@@ -104,11 +106,28 @@ export async function getMfaStatus() {
 
 export async function generateMfaSetup() {
     try {
-        await requireAuth()
-        // MOCK: Generate a fake TOTP setup containing a random secret and a fake QR data URI
-        // In a real application, you would use 'otplib' or 'speakeasy' and 'qrcode' packages
-        const secret = "JBSWY3DPEHPK3PXP" // Fake base32 secret
-        const qrDataUri = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMTAgMTBoMzB2MzBIMTB6bTQwIDBoMzB2MzBINTB6TTEwIDUwaDMwdjMwSDEwem01MCAwSDEwMHY1MEg2MnoiIGZpbGw9ImJsYWNrIi8+PC9zdmc+"
+        const session = await requireAuth()
+        
+        const totp = new OTPAuth.TOTP({
+            issuer: "SAMS",
+            label: session.user.email || "User",
+            algorithm: "SHA1",
+            digits: 6,
+            period: 30,
+            secret: new OTPAuth.Secret({ size: 20 }),
+        })
+
+        const secret = totp.secret.base32
+        const otpauth = totp.toString()
+        
+        const qrDataUri = await QRCode.toDataURL(otpauth, {
+            width: 200,
+            margin: 2,
+            color: {
+                dark: "#1976D2",
+                light: "#FFFFFF",
+            },
+        })
 
         return { success: true, data: { secret, qrDataUri } }
     } catch {
@@ -116,10 +135,47 @@ export async function generateMfaSetup() {
     }
 }
 
-export async function enableMfa(code: string) {
+export async function enableMfa(code: string, secret?: string) {
     const session = await requireAuth()
     if (code.length !== 6) return { success: false, error: "Invalid verification code" }
+    
     try {
+        // Get the stored MFA credential secret if available
+        let storedSecret = secret
+        
+        if (!storedSecret) {
+            // If no secret provided, check if there's a stored one
+            const credentials = await withDb(async (db) => {
+                const result = await db.query(
+                    "SELECT credential_data FROM mfa_credentials WHERE user_id = $1 AND type = 'TOTP'",
+                    [session.user.id]
+                )
+                return result.rows[0]
+            })
+            
+            if (credentials?.credential_data) {
+                const credData = JSON.parse(credentials.credential_data)
+                storedSecret = credData.secret
+            }
+        }
+
+        if (storedSecret) {
+            // Verify the TOTP code
+            const totp = new OTPAuth.TOTP({
+                issuer: "SAMS",
+                label: session.user.email || "User",
+                algorithm: "SHA1",
+                digits: 6,
+                period: 30,
+                secret: OTPAuth.Secret.fromBase32(storedSecret),
+            })
+
+            const delta = totp.validate({ token: code, window: 1 })
+            if (delta === null) {
+                return { success: false, error: "Invalid verification code" }
+            }
+        }
+
         await withDb(db => db.query("UPDATE users SET mfa_enabled=true, updated_at=NOW() WHERE id=$1", [session.user.id]))
         revalidatePath("/dashboard/settings")
         return { success: true }

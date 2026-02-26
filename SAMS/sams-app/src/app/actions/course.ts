@@ -93,7 +93,7 @@ export async function getCourses() {
                     COUNT(ce.student_id)::int AS "studentCount"
                 FROM courses c
                 LEFT JOIN users u ON c.lecturer_id = u.id
-                LEFT JOIN course_enrollments ce ON c.id = ce.course_id
+                LEFT JOIN student_courses ce ON c.id = ce.course_id
                 ${whereClause}
                 GROUP BY c.id, u.first_name, u.last_name
                 ORDER BY c.created_at DESC
@@ -263,7 +263,7 @@ export async function getCourseStudents(courseId: string) {
                     ce.enrolled_at AS "enrolledAt",
                     COUNT(ar.id)::int AS "totalSessions",
                     COUNT(CASE WHEN ar.status='PRESENT' THEN 1 END)::int AS "presentCount"
-                FROM course_enrollments ce
+                FROM student_courses ce
                 JOIN students s ON ce.student_id = s.id
                 LEFT JOIN attendance_sessions asess ON asess.course_id::text = ce.course_id::text
                 LEFT JOIN attendance_records ar ON ar.session_id = asess.id AND ar.student_id = s.id
@@ -290,7 +290,7 @@ export async function getStudentsNotInCourse(courseId: string) {
                 FROM students s
                 WHERE s.status='ACTIVE'
                 AND s.id NOT IN (
-                    SELECT student_id FROM course_enrollments WHERE course_id=$1::uuid
+                    SELECT student_id FROM student_courses WHERE course_id=$1::uuid
                 )
                 ORDER BY s.last_name, s.first_name
             `, [courseId])
@@ -311,14 +311,14 @@ export async function enrollStudentsInCourse(courseId: string, studentIds: strin
         await withDb(async (db) => {
             for (const studentId of studentIds) {
                 const check = await db.query(
-                    "SELECT id FROM course_enrollments WHERE course_id=$1::uuid AND student_id=$2",
+                    "SELECT id FROM student_courses WHERE course_id=$1::uuid AND student_id=$2",
                     [courseId, studentId]
                 )
                 if (check.rows.length > 0) {
                     alreadyEnrolled++
                 } else {
                     await db.query(
-                        "INSERT INTO course_enrollments (course_id, student_id) VALUES ($1::uuid, $2)",
+                        "INSERT INTO student_courses (course_id, student_id) VALUES ($1::uuid, $2)",
                         [courseId, studentId]
                     )
                     enrolled++
@@ -338,7 +338,7 @@ export async function unenrollStudentFromCourse(courseId: string, studentId: str
     await requireAdmin()
     try {
         await withDb(db => db.query(
-            "DELETE FROM course_enrollments WHERE course_id=$1::uuid AND student_id=$2",
+            "DELETE FROM student_courses WHERE course_id=$1::uuid AND student_id=$2",
             [courseId, studentId]
         ))
         revalidatePath(`/dashboard/courses/${courseId}/enrollment`)

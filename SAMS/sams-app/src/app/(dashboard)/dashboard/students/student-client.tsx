@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Trash2, Edit, ScanFace, Camera, UserPlus, Upload, Loader2 } from "lucide-react";
+import { Trash2, Edit, ScanFace, Camera, UserPlus, Upload, Loader2, HelpCircle, Download, FileText } from "lucide-react";
 import { toast } from "sonner";
 import Webcam from "react-webcam";
 import Link from "next/link";
@@ -22,6 +22,14 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -212,7 +220,116 @@ export function StudentClient({
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <input 
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="outline">
+                                <HelpCircle className="mr-2 h-4 w-4" />
+                                CSV Format
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                    <FileText className="h-5 w-5 text-[#1976D2]" />
+                                    CSV Import Format Specification
+                                </DialogTitle>
+                                <DialogDescription>
+                                    Use the following format when preparing your CSV file for bulk student import.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 mt-4">
+                                <div>
+                                    <h4 className="font-semibold mb-2">Required Column Headers:</h4>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm border-collapse">
+                                            <thead>
+                                                <tr className="bg-muted">
+                                                    <th className="border px-3 py-2 text-left font-medium">Column</th>
+                                                    <th className="border px-3 py-2 text-left font-medium">Data Type</th>
+                                                    <th className="border px-3 py-2 text-left font-medium">Required</th>
+                                                    <th className="border px-3 py-2 text-left font-medium">Validation Rules</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td className="border px-3 py-2 font-mono text-[#1976D2]">studentId</td>
+                                                    <td className="border px-3 py-2">String</td>
+                                                    <td className="border px-3 py-2 text-[#F44336]">Yes</td>
+                                                    <td className="border px-3 py-2">Unique, alphanumeric</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="border px-3 py-2 font-mono text-[#1976D2]">firstName</td>
+                                                    <td className="border px-3 py-2">String</td>
+                                                    <td className="border px-3 py-2 text-[#F44336]">Yes</td>
+                                                    <td className="border px-3 py-2">1-100 characters</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="border px-3 py-2 font-mono text-[#1976D2]">lastName</td>
+                                                    <td className="border px-3 py-2">String</td>
+                                                    <td className="border px-3 py-2 text-[#F44336]">Yes</td>
+                                                    <td className="border px-3 py-2">1-100 characters</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="border px-3 py-2 font-mono text-[#1976D2]">email</td>
+                                                    <td className="border px-3 py-2">String</td>
+                                                    <td className="border px-3 py-2 text-[#F44336]">Yes</td>
+                                                    <td className="border px-3 py-2">Valid email format, unique</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="border px-3 py-2 font-mono text-[#1976D2]">program</td>
+                                                    <td className="border px-3 py-2">String</td>
+                                                    <td className="border px-3 py-2 text-[#F44336]">Yes</td>
+                                                    <td className="border px-3 py-2">e.g., Computer Science, Engineering</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="border px-3 py-2 font-mono text-[#1976D2]">yearOfStudy</td>
+                                                    <td className="border px-3 py-2">Integer</td>
+                                                    <td className="border px-3 py-2 text-[#F44336]">Yes</td>
+                                                    <td className="border px-3 py-2">1-6 (defaults to 1 if invalid)</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold mb-2">Sample CSV Data:</h4>
+                                    <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto border">
+{`studentId,firstName,lastName,email,program,yearOfStudy
+STU001,John,Doe,john.doe@example.com,Computer Science,1
+STU002,Jane,Smith,jane.smith@example.com,Engineering,2
+STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
+                                    </pre>
+                                </div>
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <h4 className="font-semibold text-blue-800 mb-2">Important Notes:</h4>
+                                    <ul className="list-disc list-inside text-sm text-blue-700 space-y-1">
+                                        <li>First row must contain the column headers exactly as shown above</li>
+                                        <li>Email addresses must be unique - duplicates will fail</li>
+                                        <li>Student IDs must be unique - duplicates will fail</li>
+                                        <li>Year of Study will default to 1 if invalid or missing</li>
+                                        <li>No special characters allowed in names</li>
+                                        <li>Maximum 1000 students per import</li>
+                                    </ul>
+                                </div>
+                                <div className="flex justify-end">
+                                    <Button variant="outline" onClick={() => {
+                                        const csvContent = "studentId,firstName,lastName,email,program,yearOfStudy\nSTU001,John,Doe,john.doe@example.com,Computer Science,1";
+                                        const blob = new Blob([csvContent], { type: 'text/csv' });
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = 'student_template.csv';
+                                        a.click();
+                                        URL.revokeObjectURL(url);
+                                    }}>
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Download Template
+                                    </Button>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                    <input
                         type="file" 
                         accept=".csv" 
                         ref={fileInputRef} 
