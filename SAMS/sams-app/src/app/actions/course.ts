@@ -66,9 +66,17 @@ export type CourseScheduleRow = {
 // ── Courses ──────────────────────────────────────────────────────────────────
 
 export async function getCourses() {
-    await requireAuth()
+    const session = await requireAuth()
+    const userId = session.user?.id
+    const isLecturer = session.user?.role === "LECTURER"
     try {
         const rows = await withDb(async (db) => {
+            const params: string[] = []
+            let whereClause = ""
+            if (isLecturer && userId) {
+                whereClause = `WHERE c.lecturer_id = $1`
+                params.push(userId)
+            }
             const result = await db.query(`
                 SELECT
                     c.id,
@@ -86,9 +94,10 @@ export async function getCourses() {
                 FROM courses c
                 LEFT JOIN users u ON c.lecturer_id = u.id
                 LEFT JOIN course_enrollments ce ON c.id = ce.course_id
+                ${whereClause}
                 GROUP BY c.id, u.first_name, u.last_name
                 ORDER BY c.created_at DESC
-            `)
+            `, params)
             return result.rows
         })
         return { success: true, data: rows as CourseRow[] }

@@ -39,20 +39,29 @@ export type OverallStats = {
 }
 
 export async function getOverallStats(): Promise<{ success: boolean; data?: OverallStats; error?: string }> {
-    await requireAuth()
+    const session = await requireAuth()
+    const userId = session.user?.id
+    const isLecturer = session.user?.role === "LECTURER"
     try {
         const data = await withDb(async (db) => {
+            const courseFilter = isLecturer && userId
+                ? `AND s.course_id IN (SELECT id::text FROM courses WHERE lecturer_id = '${userId}')`
+                : ""
+            const recordFilter = isLecturer && userId
+                ? `AND ar.session_id IN (SELECT id FROM attendance_sessions WHERE course_id IN (SELECT id::text FROM courses WHERE lecturer_id = '${userId}'))`
+                : ""
             const [students, sessions, records, present, enrolled, atRisk] = await Promise.all([
                 db.query("SELECT COUNT(*) FROM students WHERE status='ACTIVE'"),
-                db.query("SELECT COUNT(*) FROM attendance_sessions"),
-                db.query("SELECT COUNT(*) FROM attendance_records"),
-                db.query("SELECT COUNT(*) FROM attendance_records WHERE status='PRESENT'"),
+                db.query(`SELECT COUNT(*) FROM attendance_sessions s WHERE 1=1 ${courseFilter}`),
+                db.query(`SELECT COUNT(*) FROM attendance_records ar WHERE 1=1 ${recordFilter}`),
+                db.query(`SELECT COUNT(*) FROM attendance_records ar WHERE ar.status='PRESENT' ${recordFilter}`),
                 db.query("SELECT COUNT(*) FROM students WHERE face_enrolled=true"),
                 db.query(`
                     SELECT COUNT(DISTINCT student_id) AS cnt FROM (
                         SELECT ar.student_id,
                             COUNT(*) FILTER (WHERE ar.status='PRESENT') * 100.0 / COUNT(*) AS rate
                         FROM attendance_records ar
+                        WHERE 1=1 ${recordFilter}
                         GROUP BY ar.student_id
                         HAVING COUNT(*) >= 3
                     ) sub WHERE rate < 75
@@ -77,9 +86,12 @@ export async function getOverallStats(): Promise<{ success: boolean; data?: Over
 }
 
 export async function getCourseAttendanceStats(): Promise<{ success: boolean; data?: CourseAttendanceStats[]; error?: string }> {
-    await requireAuth()
+    const session = await requireAuth()
+    const userId = session.user?.id
+    const isLecturer = session.user?.role === "LECTURER"
     try {
         const rows = await withDb(async (db) => {
+            const whereClause = isLecturer && userId ? `WHERE c.lecturer_id = '${userId}'` : ""
             const result = await db.query(`
                 SELECT
                     c.id::text AS "courseId",
@@ -91,6 +103,7 @@ export async function getCourseAttendanceStats(): Promise<{ success: boolean; da
                 FROM courses c
                 LEFT JOIN attendance_sessions s ON s.course_id = c.id::text
                 LEFT JOIN attendance_records ar ON ar.session_id = s.id
+                ${whereClause}
                 GROUP BY c.id, c.code, c.name
                 ORDER BY c.code
             `)
@@ -109,9 +122,15 @@ export async function getCourseAttendanceStats(): Promise<{ success: boolean; da
 }
 
 export async function getAtRiskStudents(): Promise<{ success: boolean; data?: AtRiskStudent[]; error?: string }> {
-    await requireAuth()
+    const session = await requireAuth()
+    const userId = session.user?.id
+    const isLecturer = session.user?.role === "LECTURER"
     try {
         const rows = await withDb(async (db) => {
+            const courseJoin = isLecturer && userId
+                ? `JOIN attendance_sessions asess ON ar.session_id = asess.id
+                   JOIN courses co ON asess.course_id = co.id::text AND co.lecturer_id = '${userId}'`
+                : ""
             const result = await db.query(`
                 SELECT
                     st.id AS "studentId",
@@ -122,6 +141,7 @@ export async function getAtRiskStudents(): Promise<{ success: boolean; data?: At
                     COUNT(ar.id) FILTER (WHERE ar.status='PRESENT')::int AS "presentCount"
                 FROM students st
                 JOIN attendance_records ar ON ar.student_id = st.id
+                ${courseJoin}
                 GROUP BY st.id, st.student_id, st.first_name, st.last_name, st.email
                 HAVING COUNT(ar.id) >= 3
                     AND (COUNT(ar.id) FILTER (WHERE ar.status='PRESENT') * 100.0 / COUNT(ar.id)) < 75

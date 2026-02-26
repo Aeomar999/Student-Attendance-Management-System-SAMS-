@@ -51,9 +51,17 @@ export type AttendanceRecordRow = {
 }
 
 export async function getAttendanceSessions() {
-    await requireAuth()
+    const session = await requireAuth()
+    const userId = session.user?.id
+    const isLecturer = session.user?.role === "LECTURER"
     try {
         const rows = await withDb(async (db) => {
+            const params: string[] = []
+            let whereClause = ""
+            if (isLecturer && userId) {
+                whereClause = `WHERE s.lecturer_id = $1`
+                params.push(userId)
+            }
             const result = await db.query(`
                 SELECT
                     s.id, s.course_id AS "courseId",
@@ -71,9 +79,10 @@ export async function getAttendanceSessions() {
                 FROM attendance_sessions s
                 LEFT JOIN courses c ON s.course_id = c.id::text
                 LEFT JOIN users u ON s.lecturer_id = u.id
+                ${whereClause}
                 ORDER BY s.session_date DESC, s.start_time DESC
                 LIMIT 200
-            `)
+            `, params)
             return result.rows
         })
         return { success: true, data: rows as AttendanceSessionRow[] }
@@ -84,14 +93,20 @@ export async function getAttendanceSessions() {
 }
 
 export async function getAttendanceStats() {
-    await requireAuth()
+    const session = await requireAuth()
+    const userId = session.user?.id
+    const isLecturer = session.user?.role === "LECTURER"
     try {
         const stats = await withDb(async (db) => {
+            const lecturerFilter = isLecturer && userId ? `WHERE s.lecturer_id = '${userId}'` : ""
+            const recordFilter = isLecturer && userId
+                ? `WHERE ar.session_id IN (SELECT id FROM attendance_sessions WHERE lecturer_id = '${userId}')`
+                : ""
             const [sessions, records, present, courses] = await Promise.all([
-                db.query("SELECT COUNT(*) FROM attendance_sessions"),
-                db.query("SELECT COUNT(*) FROM attendance_records"),
-                db.query("SELECT COUNT(*) FROM attendance_records WHERE status='PRESENT'"),
-                db.query("SELECT COUNT(DISTINCT course_id) FROM attendance_sessions"),
+                db.query(`SELECT COUNT(*) FROM attendance_sessions s ${lecturerFilter}`),
+                db.query(`SELECT COUNT(*) FROM attendance_records ar ${recordFilter}`),
+                db.query(`SELECT COUNT(*) FROM attendance_records ar ${recordFilter ? recordFilter + " AND ar.status='PRESENT'" : "WHERE status='PRESENT'"}`),
+                db.query(`SELECT COUNT(DISTINCT course_id) FROM attendance_sessions s ${lecturerFilter}`),
             ])
             const totalRecords = parseInt(records.rows[0].count)
             const totalPresent = parseInt(present.rows[0].count)

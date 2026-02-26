@@ -50,6 +50,14 @@ export default function LoginPage() {
                     <Suspense fallback={<div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">Loading...</div>}>
                         <LoginForm />
                     </Suspense>
+                    <div className="text-center">
+                        <Link
+                            href="/forgot-password"
+                            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-primary"
+                        >
+                            Forgot your password?
+                        </Link>
+                    </div>
                     <p className="px-8 text-center text-sm text-muted-foreground">
                         By clicking continue, you agree to our{" "}
                         <Link

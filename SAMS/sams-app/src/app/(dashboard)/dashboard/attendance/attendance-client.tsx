@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { CalendarCheck, Plus, CheckCircle2, XCircle, Clock, AlertCircle, ChevronDown, ChevronUp } from "lucide-react"
+import Link from "next/link"
+import { CalendarCheck, Plus, CheckCircle2, XCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
@@ -310,6 +311,11 @@ export function AttendanceClient({ initialSessions, initialStats, courses }: Pro
                                                     Close Session
                                                 </Button>
                                             )}
+                                            <Link href={`/dashboard/attendance/${session.id}`}>
+                                                <Button size="sm" variant="ghost" className="text-xs gap-1">
+                                                    <ExternalLink className="h-3 w-3" /> Detail
+                                                </Button>
+                                            </Link>
                                             {expandedSessionId === session.id
                                                 ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
                                                 : <ChevronDown className="h-4 w-4 text-muted-foreground" />

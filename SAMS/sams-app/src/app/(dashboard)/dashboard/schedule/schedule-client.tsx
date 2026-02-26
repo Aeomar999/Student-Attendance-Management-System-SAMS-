@@ -4,12 +4,10 @@ import { useState } from "react"
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react"
 import { format, startOfWeek, addDays, subWeeks, addWeeks, isSameDay } from "date-fns"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import type { ScheduleSession } from "@/app/actions/schedule"
 
 type Props = { initialSessions: ScheduleSession[]; currentWeekStart: string }
 
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 const SHORT_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 export function ScheduleClient({ initialSessions, currentWeekStart }: Props) {

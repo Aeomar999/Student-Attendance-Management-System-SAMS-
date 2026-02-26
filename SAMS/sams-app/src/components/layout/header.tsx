@@ -12,6 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menu } from "lucide-react";
+import { NotificationBell } from "@/components/notification-bell";
 
 export function Header() {
     const { data: session } = useSession();
@@ -32,6 +33,7 @@ export function Header() {
             </div>
 
             <div className="flex items-center gap-4">
+                <NotificationBell />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">

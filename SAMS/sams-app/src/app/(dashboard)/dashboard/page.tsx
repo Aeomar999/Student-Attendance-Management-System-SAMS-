@@ -1,6 +1,5 @@
 import { Metadata } from "next"
 import { withDb } from "@/lib/db"
-import { auth } from "@/lib/auth"
 
 export const metadata: Metadata = {
     title: "Dashboard Overview | SAMS",
@@ -9,9 +8,6 @@ export const metadata: Metadata = {
 
 async function getDashboardData() {
     try {
-        const session = await auth()
-        const userId = session?.user?.id
-
         const data = await withDb(async (db) => {
             const [students, staff, sessions, logs, faceEnrolled, presentRecords, totalRecords] = await Promise.all([
                 db.query("SELECT COUNT(*) FROM students WHERE status='ACTIVE'"),
