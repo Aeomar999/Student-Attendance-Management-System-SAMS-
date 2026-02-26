@@ -1,0 +1,1 @@
+﻿src/app/(dashboard)/dashboard/settings/settings-client.tsx(97,36): error TS2339: Property 'error' does not exist on type '{ success: boolean; data: { secret: string; qrDataUri: string; }; }'.

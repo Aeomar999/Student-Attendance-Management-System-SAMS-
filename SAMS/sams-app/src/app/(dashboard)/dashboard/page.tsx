@@ -1,39 +1,137 @@
-import { Metadata } from "next";
+import { Metadata } from "next"
+import { withDb } from "@/lib/db"
+import { auth } from "@/lib/auth"
 
 export const metadata: Metadata = {
     title: "Dashboard Overview | SAMS",
     description: "Overview of system status and quick actions",
-};
+}
 
-async function getStats() {
+async function getDashboardData() {
     try {
-        const { Client } = await import("pg");
-        const client = new Client({
-            connectionString: process.env.DATABASE_URL!,
-            ssl: { rejectUnauthorized: false },
-        });
-        await client.connect();
-        const [students, staff, sessions, logs] = await Promise.all([
-            client.query("SELECT COUNT(*) FROM students"),
-            client.query("SELECT COUNT(*) FROM users"),
-            client.query("SELECT COUNT(*) FROM attendance_sessions"),
-            client.query("SELECT COUNT(*) FROM audit_logs"),
-        ]);
-        await client.end();
-        return {
-            totalStudents: parseInt(students.rows[0].count),
-            totalStaff: parseInt(staff.rows[0].count),
-            totalSessions: parseInt(sessions.rows[0].count),
-            totalAuditLogs: parseInt(logs.rows[0].count),
-        };
+        const session = await auth()
+        const userId = session?.user?.id
+
+        const data = await withDb(async (db) => {
+            const [students, staff, sessions, logs, faceEnrolled, presentRecords, totalRecords] = await Promise.all([
+                db.query("SELECT COUNT(*) FROM students WHERE status='ACTIVE'"),
+                db.query("SELECT COUNT(*) FROM users WHERE status='ACTIVE'"),
+                db.query("SELECT COUNT(*) FROM attendance_sessions"),
+                db.query("SELECT COUNT(*) FROM audit_logs"),
+                db.query("SELECT COUNT(*) FROM students WHERE face_enrolled=true"),
+                db.query("SELECT COUNT(*) FROM attendance_records WHERE status='PRESENT'"),
+                db.query("SELECT COUNT(*) FROM attendance_records"),
+            ])
+
+            // Upcoming / recent sessions (today and future, limit 5)
+            const upcoming = await db.query(`
+                SELECT
+                    s.id, c.code AS "courseCode", c.name AS "courseName",
+                    s.session_date AS "sessionDate",
+                    s.start_time AS "startTime", s.status
+                FROM attendance_sessions s
+                LEFT JOIN courses c ON s.course_id = c.id::text
+                WHERE s.session_date >= CURRENT_DATE
+                ORDER BY s.session_date ASC, s.start_time ASC
+                LIMIT 5
+            `)
+
+            // Recent audit log activity
+            const activity = await db.query(`
+                SELECT al.action, al.entity_type AS "entityType", al.created_at AS "createdAt",
+                    CONCAT(u.first_name, ' ', u.last_name) AS "userName"
+                FROM audit_logs al
+                LEFT JOIN users u ON al.user_id = u.id
+                ORDER BY al.created_at DESC
+                LIMIT 6
+            `)
+
+            const totalRec = parseInt(totalRecords.rows[0].count)
+            const presentRec = parseInt(presentRecords.rows[0].count)
+            return {
+                totalStudents: parseInt(students.rows[0].count),
+                totalStaff: parseInt(staff.rows[0].count),
+                totalSessions: parseInt(sessions.rows[0].count),
+                totalAuditLogs: parseInt(logs.rows[0].count),
+                faceEnrolled: parseInt(faceEnrolled.rows[0].count),
+                attendanceRate: totalRec > 0 ? Math.round(presentRec / totalRec * 100) : 0,
+                upcomingSessions: upcoming.rows,
+                recentActivity: activity.rows,
+            }
+        })
+        return data
     } catch {
-        // Return defaults if DB is unavailable
-        return { totalStudents: 0, totalStaff: 0, totalSessions: 0, totalAuditLogs: 0 };
+        return {
+            totalStudents: 0, totalStaff: 0, totalSessions: 0, totalAuditLogs: 0,
+            faceEnrolled: 0, attendanceRate: 0, upcomingSessions: [], recentActivity: [],
+        }
+    }
+}
+
+function formatTimeAgo(dateStr: string) {
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const mins = Math.floor(diff / 60000)
+    if (mins < 1) return "just now"
+    if (mins < 60) return `${mins}m ago`
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return `${hours}h ago`
+    return `${Math.floor(hours / 24)}d ago`
+}
+
+function formatSessionTime(startTime: string) {
+    try {
+        return new Date(startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    } catch {
+        return "—"
     }
 }
 
 export default async function DashboardPage() {
-    const { totalStudents, totalStaff, totalSessions, totalAuditLogs } = await getStats();
+    const data = await getDashboardData()
+
+    const statCards = [
+        {
+            title: "Total Staff / Lecturers",
+            value: data.totalStaff,
+            subtitle: "Active system accounts",
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+            ),
+        },
+        {
+            title: "Enrolled Students",
+            value: data.totalStudents,
+            subtitle: `${data.faceEnrolled} with face data`,
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+            ),
+        },
+        {
+            title: "Attendance Sessions",
+            value: data.totalSessions,
+            subtitle: `${data.attendanceRate}% avg attendance rate`,
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground">
+                    <rect width="20" height="14" x="2" y="5" rx="2" /><path d="M2 10h20" />
+                </svg>
+            ),
+        },
+        {
+            title: "FR Health Status",
+            value: "Operational",
+            subtitle: "Engine responding normally",
+            valueClass: "text-green-500",
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-green-500">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+            ),
+        },
+    ]
 
     return (
         <div className="flex-1 space-y-4">
@@ -41,83 +139,86 @@ export default async function DashboardPage() {
                 <h2 className="text-3xl font-bold tracking-tight">Dashboard Overview</h2>
             </div>
 
+            {/* Stat Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-xl border bg-card text-card-foreground shadow">
-                    <div className="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
-                        <h3 className="tracking-tight text-sm font-medium">Total Staff / Lecturers</h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                {statCards.map(card => (
+                    <div key={card.title} className="rounded-xl border bg-card text-card-foreground shadow">
+                        <div className="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+                            <h3 className="tracking-tight text-sm font-medium">{card.title}</h3>
+                            {card.icon}
+                        </div>
+                        <div className="p-6 pt-0">
+                            <div className={`text-2xl font-bold ${"valueClass" in card ? card.valueClass : ""}`}>
+                                {card.value}
+                            </div>
+                            <p className="text-xs text-muted-foreground">{card.subtitle}</p>
+                        </div>
                     </div>
-                    <div className="p-6 pt-0">
-                        <div className="text-2xl font-bold">{totalStaff}</div>
-                        <p className="text-xs text-muted-foreground">Active system accounts</p>
-                    </div>
-                </div>
-
-                <div className="rounded-xl border bg-card text-card-foreground shadow">
-                    <div className="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
-                        <h3 className="tracking-tight text-sm font-medium">Enrolled Students</h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
-                    </div>
-                    <div className="p-6 pt-0">
-                        <div className="text-2xl font-bold">{totalStudents}</div>
-                        <p className="text-xs text-muted-foreground">Students in the database</p>
-                    </div>
-                </div>
-
-                <div className="rounded-xl border bg-card text-card-foreground shadow">
-                    <div className="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
-                        <h3 className="tracking-tight text-sm font-medium">Attendance Sessions</h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground"><rect width="20" height="14" x="2" y="5" rx="2" /><path d="M2 10h20" /></svg>
-                    </div>
-                    <div className="p-6 pt-0">
-                        <div className="text-2xl font-bold">{totalSessions}</div>
-                        <p className="text-xs text-muted-foreground">Recorded across all terms</p>
-                    </div>
-                </div>
-
-                <div className="rounded-xl border bg-card text-card-foreground shadow">
-                    <div className="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
-                        <h3 className="tracking-tight text-sm font-medium">FR Health Status</h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-green-500"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
-                    </div>
-                    <div className="p-6 pt-0">
-                        <div className="text-2xl font-bold text-green-500">Operational</div>
-                        <p className="text-xs text-muted-foreground">Engine responding normally</p>
-                    </div>
-                </div>
+                ))}
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                {/* Recent Activity */}
                 <div className="rounded-xl border bg-card text-card-foreground shadow col-span-4">
                     <div className="p-6">
                         <h3 className="tracking-tight text-lg font-medium mb-4">Recent Activity</h3>
-                        <div className="flex items-center justify-center h-[250px] text-muted-foreground">
-                            {totalAuditLogs === 0 ? "No recent activity recorded." : "Analytics graph placeholder"}
-                        </div>
+                        {data.recentActivity.length === 0 ? (
+                            <div className="flex items-center justify-center h-[200px] text-muted-foreground text-sm">
+                                No recent activity recorded.
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {data.recentActivity.map((item: { action: string; entityType: string; createdAt: string; userName: string | null }, i: number) => (
+                                    <div key={i} className="flex items-start gap-3 text-sm">
+                                        <div className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0" />
+                                        <div className="flex-1 min-w-0">
+                                            <span className="font-medium">{item.userName ?? "System"}</span>
+                                            {" "}
+                                            <span className="text-muted-foreground">
+                                                {item.action.toLowerCase().replace(/_/g, " ")} {item.entityType.toLowerCase()}
+                                            </span>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground shrink-0">
+                                            {formatTimeAgo(item.createdAt)}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
+
+                {/* Upcoming Sessions */}
                 <div className="rounded-xl border bg-card text-card-foreground shadow col-span-3">
                     <div className="p-6">
-                        <h3 className="tracking-tight text-lg font-medium mb-4">Upcoming Classes</h3>
-                        <div className="space-y-6">
-                            <div className="flex items-center">
-                                <div className="ml-4 space-y-1">
-                                    <p className="text-sm font-medium leading-none">CS301 - Operating Systems</p>
-                                    <p className="text-sm text-muted-foreground">Starts in 30 mins</p>
-                                </div>
-                                <div className="ml-auto font-medium">Room 402</div>
+                        <h3 className="tracking-tight text-lg font-medium mb-4">Upcoming Sessions</h3>
+                        {data.upcomingSessions.length === 0 ? (
+                            <div className="flex items-center justify-center h-[200px] text-muted-foreground text-sm">
+                                No upcoming sessions scheduled.
                             </div>
-                            <div className="flex items-center">
-                                <div className="ml-4 space-y-1">
-                                    <p className="text-sm font-medium leading-none">CS450 - Artificial Intelligence</p>
-                                    <p className="text-sm text-muted-foreground">Starts in 2 hours</p>
-                                </div>
-                                <div className="ml-auto font-medium">Room 105</div>
+                        ) : (
+                            <div className="space-y-4">
+                                {data.upcomingSessions.map((s: { id: string; courseCode: string; courseName: string; sessionDate: string; startTime: string; status: string }) => (
+                                    <div key={s.id} className="flex items-center gap-3">
+                                        <div className={`h-2 w-2 rounded-full shrink-0 ${s.status === "ACTIVE" ? "bg-green-500" : "bg-muted-foreground"}`} />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium leading-none truncate">
+                                                {s.courseCode} — {s.courseName}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                {new Date(s.sessionDate).toLocaleDateString()} at {formatSessionTime(s.startTime)}
+                                            </p>
+                                        </div>
+                                        <span className={`text-xs font-medium shrink-0 ${s.status === "ACTIVE" ? "text-green-500" : "text-muted-foreground"}`}>
+                                            {s.status}
+                                        </span>
+                                    </div>
+                                ))}
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>
         </div>
-    );
+    )
 }

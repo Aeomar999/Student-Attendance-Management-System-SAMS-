@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Trash2, Edit, ScanFace, Camera, UserPlus } from "lucide-react";
+import { Trash2, Edit, ScanFace, Camera, UserPlus, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import Webcam from "react-webcam";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -29,6 +30,7 @@ import {
     updateStudent,
     deleteStudent
 } from "@/app/actions/student";
+import { importStudentsCSV } from "@/app/actions/student-import";
 
 type StudentType = {
     id: string;
@@ -54,6 +56,8 @@ export function StudentClient({
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState<StudentType | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Form states
     const [firstName, setFirstName] = useState("");
@@ -134,7 +138,7 @@ export function StudentClient({
                     departmentId,
                 });
 
-                if (result.success && result.data) {
+                if (result.success && "data" in result && result.data) {
                     toast.success("Student updated successfully");
                     window.location.reload(); 
                     setIsSheetOpen(false);
@@ -153,7 +157,7 @@ export function StudentClient({
                     departmentId,
                 });
 
-                if (result.success && result.data) {
+                if (result.success && "data" in result && result.data) {
                     toast.success("Student created successfully");
                     if (faceImageSrc) {
                         toast.info("Face enrollment mock submitted to FR engine");
@@ -207,16 +211,49 @@ export function StudentClient({
                         </p>
                     </div>
                 </div>
-                
-                <Sheet open={isSheetOpen} onOpenChange={(open) => {
-                    setIsSheetOpen(open);
-                    if (!open) resetForm();
-                }}>
-                    <SheetTrigger asChild>
-                        <Button onClick={handleOpenNew}>
-                            <UserPlus className="mr-2 h-4 w-4" /> Add Student
-                        </Button>
-                    </SheetTrigger>
+                <div className="flex gap-2">
+                    <input 
+                        type="file" 
+                        accept=".csv" 
+                        ref={fileInputRef} 
+                        className="hidden" 
+                        onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            setIsImporting(true);
+                            try {
+                                const text = await file.text();
+                                const result = await importStudentsCSV(text);
+                                if (result.success && result.data) {
+                                    toast.success(`Imported ${result.data.imported} students. ${result.data.failed > 0 ? `${result.data.failed} failed.` : ''}`);
+                                    if (result.data.errors.length > 0) {
+                                        console.error("CSV Import errors:", result.data.errors);
+                                    }
+                                    window.location.reload();
+                                } else {
+                                    toast.error(result.error || "Failed to import CSV");
+                                }
+                            } catch {
+                                toast.error("An error occurred during import");
+                            } finally {
+                                setIsImporting(false);
+                                if (fileInputRef.current) fileInputRef.current.value = "";
+                            }
+                        }}
+                    />
+                    <Button variant="outline" disabled={isImporting} onClick={() => fileInputRef.current?.click()}>
+                        {isImporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                        Import CSV
+                    </Button>
+                    <Sheet open={isSheetOpen} onOpenChange={(open) => {
+                        setIsSheetOpen(open);
+                        if (!open) resetForm();
+                    }}>
+                        <SheetTrigger asChild>
+                            <Button onClick={handleOpenNew}>
+                                <UserPlus className="mr-2 h-4 w-4" /> Add Student
+                            </Button>
+                        </SheetTrigger>
                     <SheetContent className="sm:max-w-xl overflow-y-auto">
                         <SheetHeader>
                             <SheetTitle>{editingStudent ? "Edit Student" : "Register Student"}</SheetTitle>
@@ -322,6 +359,7 @@ export function StudentClient({
                         </form>
                     </SheetContent>
                 </Sheet>
+                </div>
             </div>
 
             {/* Stats Row */}
@@ -371,7 +409,12 @@ export function StudentClient({
                                     <TableCell className="font-mono text-sm font-medium">{student.studentId}</TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
-                                            <span className="font-medium">{student.firstName} {student.lastName}</span>
+                                            <Link
+                                                href={`/dashboard/students/${student.id}`}
+                                                className="font-medium hover:underline text-primary"
+                                            >
+                                                {student.firstName} {student.lastName}
+                                            </Link>
                                             <span className="text-sm text-muted-foreground">{student.email}</span>
                                         </div>
                                     </TableCell>

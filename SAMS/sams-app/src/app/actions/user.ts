@@ -60,7 +60,6 @@ export async function createUser(data: z.infer<typeof userSchema>) {
         })
         if (!result) return { success: false, error: "Email already in use" }
 
-        // Generate account setup token
         const token = randomBytes(32).toString("hex")
         const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000)
         await withDb(db => db.query(
@@ -113,6 +112,63 @@ export async function deleteUser(id: string) {
     } catch (error) {
         console.error("Failed to delete user:", error)
         return { success: false, error: "Failed to delete user" }
+    }
+}
+
+export async function suspendUser(id: string) {
+    const session = await requireAdmin()
+    if (session.user.id === id) return { success: false, error: "Cannot suspend your own account" }
+    try {
+        await withDb(db => db.query(
+            "UPDATE users SET status='SUSPENDED', updated_at=NOW() WHERE id=$1",
+            [id]
+        ))
+        revalidatePath("/dashboard/users")
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to suspend user:", error)
+        return { success: false, error: "Failed to suspend user" }
+    }
+}
+
+export async function activateUser(id: string) {
+    await requireAdmin()
+    try {
+        await withDb(db => db.query(
+            "UPDATE users SET status='ACTIVE', failed_attempts=0, locked_until=NULL, updated_at=NOW() WHERE id=$1",
+            [id]
+        ))
+        revalidatePath("/dashboard/users")
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to activate user:", error)
+        return { success: false, error: "Failed to activate user" }
+    }
+}
+
+export async function adminSendPasswordReset(id: string) {
+    await requireAdmin()
+    try {
+        const email = await withDb(async (db) => {
+            const result = await db.query("SELECT email FROM users WHERE id=$1", [id])
+            return result.rows[0]?.email as string | undefined
+        })
+        if (!email) return { success: false, error: "User not found" }
+
+        const token = randomBytes(32).toString("hex")
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24h
+        await withDb(db => db.query(
+            `INSERT INTO setup_tokens (id, token, email, expires_at, created_at) VALUES (gen_random_uuid(), $1, $2, $3, NOW())`,
+            [token, email, expiresAt]
+        ))
+
+        const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/setup-account?token=${token}`
+        console.warn(`[EMAIL MOCK] Password reset link for ${email}: ${resetLink}`)
+
+        return { success: true, data: { resetLink, email } }
+    } catch (error) {
+        console.error("Failed to generate reset link:", error)
+        return { success: false, error: "Failed to generate reset link" }
     }
 }
 

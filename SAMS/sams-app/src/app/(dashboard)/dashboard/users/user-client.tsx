@@ -1,33 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Edit } from "lucide-react";
+import { Plus, Trash2, Edit, Ban, CheckCircle, Link as LinkIcon } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
+    Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
-    createUser,
-    updateUser,
-    deleteUser
+    createUser, updateUser, deleteUser, suspendUser, activateUser, adminSendPasswordReset
 } from "@/app/actions/user";
 
 type UserType = {
@@ -40,10 +28,10 @@ type UserType = {
     createdAt: Date;
 };
 
-export function UserClient({ 
-    initialUsers, 
-    currentUserId 
-}: { 
+export function UserClient({
+    initialUsers,
+    currentUserId
+}: {
     initialUsers: UserType[];
     currentUserId: string;
 }) {
@@ -83,38 +71,23 @@ export function UserClient({
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-
         try {
             if (editingUser) {
-                // Update
-                const result = await updateUser(editingUser.id, {
-                    firstName,
-                    lastName,
-                    email,
-                    role,
-                });
-
-                if (result.success && result.data) {
+                const result = await updateUser(editingUser.id, { firstName, lastName, email, role });
+                if (result.success) {
                     toast.success("User updated successfully");
-                    setUsers(users.map(u => u.id === editingUser.id ? { ...u, ...result.data } : u));
+                    setUsers(users.map(u => u.id === editingUser.id ? { ...u, firstName, lastName, email, role } : u));
                     setIsSheetOpen(false);
                 } else {
                     toast.error(result.error || "Failed to update user");
                 }
             } else {
-                // Create
-                const result = await createUser({
-                    firstName,
-                    lastName,
-                    email,
-                    role,
-                });
-
-                if (result.success && result.data) {
+                const result = await createUser({ firstName, lastName, email, role });
+                if (result.success && "data" in result && result.data) {
                     toast.success("User created successfully");
-                    if (result.magicLink) {
+                    if ("magicLink" in result && result.magicLink) {
                         toast.message("Setup Link Generated", {
-                            description: "In production, an email would be sent. For now, copy this link:",
+                            description: "In production an email would be sent. Copy this setup link:",
                             action: {
                                 label: "Copy Link",
                                 onClick: () => {
@@ -124,12 +97,7 @@ export function UserClient({
                             },
                         });
                     }
-                    
-                    // Small delay to allow toast to render before reloading
-                    setTimeout(() => {
-                        window.location.reload(); 
-                    }, 2500);
-                    
+                    setTimeout(() => window.location.reload(), 2500);
                     setIsSheetOpen(false);
                 } else {
                     toast.error(result.error || "Failed to create user");
@@ -143,8 +111,7 @@ export function UserClient({
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this user?")) return;
-
+        if (!confirm("Are you sure you want to delete this user? This cannot be undone.")) return;
         setIsLoading(true);
         try {
             const result = await deleteUser(id);
@@ -158,6 +125,55 @@ export function UserClient({
             toast.error("An unexpected error occurred");
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleSuspend = async (id: string) => {
+        if (!confirm("Suspend this user? They will be unable to login until reactivated.")) return;
+        try {
+            const result = await suspendUser(id);
+            if (result.success) {
+                toast.success("User suspended");
+                setUsers(users.map(u => u.id === id ? { ...u, status: "SUSPENDED" } : u));
+            } else {
+                toast.error(result.error || "Failed to suspend user");
+            }
+        } catch {
+            toast.error("An unexpected error occurred");
+        }
+    };
+
+    const handleActivate = async (id: string) => {
+        try {
+            const result = await activateUser(id);
+            if (result.success) {
+                toast.success("User activated");
+                setUsers(users.map(u => u.id === id ? { ...u, status: "ACTIVE" } : u));
+            } else {
+                toast.error(result.error || "Failed to activate user");
+            }
+        } catch {
+            toast.error("An unexpected error occurred");
+        }
+    };
+
+    const handlePasswordReset = async (id: string) => {
+        try {
+            const result = await adminSendPasswordReset(id);
+            if (result.success && "data" in result && result.data) {
+                const link = (result.data as { resetLink: string }).resetLink;
+                navigator.clipboard.writeText(link).then(() => {
+                    toast.success("Password reset link copied to clipboard", {
+                        description: "Share this link with the user to let them set a new password.",
+                    });
+                }).catch(() => {
+                    toast.message("Password Reset Link", { description: link });
+                });
+            } else {
+                toast.error(result.error || "Failed to generate reset link");
+            }
+        } catch {
+            toast.error("An unexpected error occurred");
         }
     };
 
@@ -182,7 +198,7 @@ export function UserClient({
                         Manage system administrators, lecturers, and staff accounts.
                     </p>
                 </div>
-                
+
                 <Sheet open={isSheetOpen} onOpenChange={(open) => {
                     setIsSheetOpen(open);
                     if (!open) resetForm();
@@ -199,7 +215,7 @@ export function UserClient({
                                 {editingUser ? "Update the details for this user." : "Fill in the details to create a new user account."}
                             </SheetDescription>
                         </SheetHeader>
-                        
+
                         <form onSubmit={onSubmit} className="space-y-4 py-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
@@ -231,14 +247,14 @@ export function UserClient({
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    disabled={isLoading || !!editingUser} // Prevent changing email on edit for simplify
+                                    disabled={isLoading || !!editingUser}
                                 />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="role">Role</Label>
-                                <select 
+                                <select
                                     id="role"
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     value={role}
                                     onChange={(e) => setRole(e.target.value as "SUPER_ADMIN" | "ADMIN" | "LECTURER")}
                                     disabled={isLoading}
@@ -248,7 +264,7 @@ export function UserClient({
                                     <option value="SUPER_ADMIN">Super Admin</option>
                                 </select>
                             </div>
-                            
+
                             <div className="pt-4 flex justify-end">
                                 <Button type="submit" disabled={isLoading}>
                                     {isLoading ? "Saving..." : editingUser ? "Update User" : "Create User"}
@@ -290,20 +306,54 @@ export function UserClient({
                                     <TableCell>{getStatusBadge(user.status)}</TableCell>
                                     <TableCell>{format(new Date(user.createdAt), "MMM d, yyyy")}</TableCell>
                                     <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
+                                        <div className="flex justify-end gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
                                                 onClick={() => handleOpenEdit(user)}
+                                                title="Edit user"
                                             >
                                                 <Edit className="h-4 w-4" />
                                             </Button>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => handlePasswordReset(user.id)}
+                                                title="Copy password reset link"
+                                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                            >
+                                                <LinkIcon className="h-4 w-4" />
+                                            </Button>
+                                            {user.status === "SUSPENDED" ? (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleActivate(user.id)}
+                                                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                    title="Activate user"
+                                                    disabled={user.id === currentUserId}
+                                                >
+                                                    <CheckCircle className="h-4 w-4" />
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleSuspend(user.id)}
+                                                    className="text-orange-500 hover:text-orange-700 hover:bg-orange-50"
+                                                    title="Suspend user"
+                                                    disabled={user.id === currentUserId}
+                                                >
+                                                    <Ban className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
                                                 className="text-red-500 hover:text-red-700 hover:bg-red-100"
                                                 onClick={() => handleDelete(user.id)}
-                                                disabled={user.id === currentUserId}
+                                                disabled={user.id === currentUserId || isLoading}
+                                                title="Delete user"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>

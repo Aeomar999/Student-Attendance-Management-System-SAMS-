@@ -13,6 +13,7 @@ import {
     UserCheck,
     FileBarChart,
     UserCog,
+    Shield,
     LucideIcon
 } from "lucide-react";
 
@@ -54,6 +55,13 @@ const routes: Route[] = [
         icon: UserCog,
         href: "/dashboard/users",
         color: "text-indigo-500",
+        adminOnly: true,
+    },
+    {
+        label: "Audit Logs",
+        icon: Shield,
+        href: "/dashboard/audit-logs",
+        color: "text-amber-500",
         adminOnly: true,
     },
     {
