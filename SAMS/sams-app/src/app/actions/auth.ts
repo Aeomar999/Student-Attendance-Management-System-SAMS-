@@ -1,22 +1,33 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { prisma, queryRaw } from "@/lib/prisma";
 import * as argon2 from "@node-rs/argon2";
+
+interface SetupTokenRow {
+    id: string;
+    token: string;
+    email: string;
+    expires_at: Date;
+    created_at: Date;
+}
 
 export async function getSetupTokenDetails(token: string) {
     try {
-        // TypeScript compiler in CI sometimes misses generated types immediately
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const setupToken = await prisma.setupToken.findUnique({
-            where: { token },
-        });
+        console.log("[DEBUG] Looking for token:", token);
+        
+        const tokens = await queryRaw<SetupTokenRow>(
+            'SELECT id, token, email, expires_at, created_at FROM setup_tokens WHERE token = $1',
+            [token]
+        );
+
+        const setupToken = tokens[0];
+        console.log("[DEBUG] Found token:", setupToken);
 
         if (!setupToken) {
             return { success: false, error: "Token not found" };
         }
 
-        if (new Date() > setupToken.expiresAt) {
+        if (new Date() > new Date(setupToken.expires_at)) {
             return { success: false, error: "Setup link has expired" };
         }
 
@@ -26,24 +37,25 @@ export async function getSetupTokenDetails(token: string) {
         };
     } catch (error) {
         console.error("Error retrieving setup token:", error);
-        return { success: false, error: "Failed to verify setup link" };
+        return { success: false, error: `Failed to verify setup link: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
 }
 
 export async function verifyAndSetupAccount(token: string, password: string) {
     try {
-        // TypeScript compiler in CI sometimes misses generated types immediately
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const setupToken = await prisma.setupToken.findUnique({
-            where: { token },
-        });
+        // Use raw query to find the token
+        const tokens = await queryRaw<SetupTokenRow>(
+            'SELECT id, token, email, expires_at, created_at FROM setup_tokens WHERE token = $1',
+            [token]
+        );
+
+        const setupToken = tokens[0];
 
         if (!setupToken) {
             return { success: false, error: "Token not found or invalid" };
         }
 
-        if (new Date() > setupToken.expiresAt) {
+        if (new Date() > new Date(setupToken.expires_at)) {
             return { success: false, error: "Setup link has expired" };
         }
 
@@ -51,16 +63,16 @@ export async function verifyAndSetupAccount(token: string, password: string) {
         const hashedPassword = await argon2.hash(password);
 
         // Update the user's password using the email from the token
-        await prisma.user.update({
-            where: { email: setupToken.email },
-            data: { passwordHash: hashedPassword },
-        });
+        await queryRaw(
+            'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE email = $2',
+            [hashedPassword, setupToken.email]
+        );
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        await prisma.setupToken.delete({
-            where: { id: setupToken.id },
-        });
+        // Delete the used token
+        await queryRaw(
+            'DELETE FROM setup_tokens WHERE id = $1',
+            [setupToken.id]
+        );
 
         return { success: true };
     } catch (error) {

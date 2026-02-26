@@ -23,6 +23,9 @@ export function Header() {
         return email.substring(0, 2).toUpperCase();
     };
 
+    const userName = session?.user?.name || session?.user?.email?.split('@')[0] || "User";
+    const firstName = userName.split(' ')[0];
+
     return (
         <header className="flex h-16 items-center justify-between border-b px-6 bg-background">
             <div className="flex items-center">
@@ -30,6 +33,9 @@ export function Header() {
                     <Menu className="h-5 w-5" />
                     <span className="sr-only">Toggle mobile menu</span>
                 </Button>
+                <span className="text-sm font-medium text-muted-foreground hidden sm:inline">
+                    Welcome, {firstName}
+                </span>
             </div>
 
             <div className="flex items-center gap-4">
@@ -47,7 +53,7 @@ export function Header() {
                         <DropdownMenuLabel className="font-normal">
                             <div className="flex flex-col space-y-1">
                                 <p className="text-sm font-medium leading-none">
-                                    User Account
+                                    {userName}
                                 </p>
                                 <p className="text-xs leading-none text-muted-foreground">
                                     {session?.user?.email}

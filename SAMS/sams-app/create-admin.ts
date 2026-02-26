@@ -19,13 +19,13 @@ async function main() {
     try {
         // Direct SQL Upsert using Neon
         const query = `
-            INSERT INTO "User" ("id", "email", "passwordHash", "firstName", "lastName", "role", "createdAt", "updatedAt")
-            VALUES (gen_random_uuid(), $1, $2, 'System', 'Admin', 'SUPER_ADMIN', NOW(), NOW())
-            ON CONFLICT ("email") 
+            INSERT INTO users (id, email, password_hash, first_name, last_name, role, institution_id, created_at, updated_at)
+            VALUES (gen_random_uuid(), $1, $2, 'System', 'Admin', 'SUPER_ADMIN', (SELECT id FROM institutions LIMIT 1), NOW(), NOW())
+            ON CONFLICT (email) 
             DO UPDATE SET 
-                "passwordHash" = EXCLUDED."passwordHash",
-                "role" = 'SUPER_ADMIN',
-                "updatedAt" = NOW();
+                password_hash = EXCLUDED.password_hash,
+                role = 'SUPER_ADMIN',
+                updated_at = NOW();
         `;
 
         await client.query(query, [email, hash]);

@@ -49,7 +49,7 @@ export async function requireLecturer() {
     return requireRole("LECTURER", "ADMIN", "SUPER_ADMIN")
 }
 
-export function canManageUser(targetRole: UserRole): boolean {
+export function canManageUser(): boolean {
     const session = auth()
     if (!session) return false
 

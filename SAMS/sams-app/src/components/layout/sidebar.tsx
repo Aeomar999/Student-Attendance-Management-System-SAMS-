@@ -14,7 +14,9 @@ import {
     FileBarChart,
     UserCog,
     Shield,
-    LucideIcon
+    LucideIcon,
+    Building2,
+    DoorOpen,
 } from "lucide-react";
 
 type Route = {
@@ -75,6 +77,20 @@ const routes: Route[] = [
         icon: Calendar,
         href: "/dashboard/schedule",
         color: "text-green-700",
+    },
+    {
+        label: "Departments",
+        icon: Building2,
+        href: "/dashboard/departments",
+        color: "text-cyan-500",
+        adminOnly: true,
+    },
+    {
+        label: "Rooms",
+        icon: DoorOpen,
+        href: "/dashboard/rooms",
+        color: "text-teal-500",
+        adminOnly: true,
     },
 ];
 

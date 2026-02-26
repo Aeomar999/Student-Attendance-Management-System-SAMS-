@@ -1,6 +1,9 @@
 import { Metadata } from "next"
 import { withDb } from "@/lib/db"
 import { unstable_cache } from "next/cache"
+import { auth } from "@/lib/auth"
+import { User, Users, Calendar, Shield, TrendingUp, TrendingDown, Clock, BookOpen, QrCode, Activity } from "lucide-react"
+import Link from "next/link"
 
 export const metadata: Metadata = {
     title: "Dashboard Overview | SAMS",
@@ -116,96 +119,198 @@ function formatSessionTime(startTime: string) {
     }
 }
 
+interface StatCardProps {
+    title: string
+    value: string | number
+    subtitle: string
+    icon: React.ReactNode
+    trend?: { value: number; isPositive: boolean }
+    valueClass?: string
+    href?: string
+}
+
+function StatCard({ title, value, subtitle, icon, trend, valueClass, href }: StatCardProps) {
+    const content = (
+        <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-200">
+            <div className="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+                <h3 className="tracking-tight text-sm font-medium text-muted-foreground">{title}</h3>
+                <div className="p-2 rounded-lg bg-primary/10">
+                    {icon}
+                </div>
+            </div>
+            <div className="p-6 pt-0">
+                <div className="flex items-baseline gap-2">
+                    <div className={`text-3xl font-bold ${valueClass || ""}`}>
+                        {value}
+                    </div>
+                    {trend && (
+                        <div className={`flex items-center text-xs font-medium ${trend.isPositive ? "text-green-600" : "text-red-600"}`}>
+                            {trend.isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                            {Math.abs(trend.value)}%
+                        </div>
+                    )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+            </div>
+        </div>
+    )
+
+    if (href) {
+        return <Link href={href}>{content}</Link>
+    }
+    return content
+}
+
+interface QuickActionProps {
+    title: string
+    description: string
+    icon: React.ReactNode
+    href: string
+    variant?: "default" | "outline"
+}
+
+function QuickAction({ title, description, icon, href, variant = "outline" }: QuickActionProps) {
+    return (
+        <Link 
+            href={href} 
+            className={`flex items-center gap-4 p-4 rounded-lg border ${variant === "default" ? "bg-primary text-primary-foreground" : "bg-card hover:bg-accent"} transition-colors`}
+        >
+            <div className={`p-2 rounded-lg ${variant === "default" ? "bg-primary/20" : "bg-primary/10"}`}>
+                {icon}
+            </div>
+            <div>
+                <p className={`font-medium ${variant === "default" ? "text-primary-foreground" : ""}`}>{title}</p>
+                <p className={`text-xs ${variant === "default" ? "text-primary-foreground/80" : "text-muted-foreground"}`}>{description}</p>
+            </div>
+        </Link>
+    )
+}
+
 export default async function DashboardPage() {
+    const session = await auth()
     const data = await getDashboardData()
+    
+    const userName = session?.user?.name || session?.user?.email?.split('@')[0] || "User"
+    const firstName = userName.split(' ')[0]
 
     const statCards = [
         {
             title: "Total Staff / Lecturers",
             value: data.totalStaff,
             subtitle: "Active system accounts",
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-            ),
+            icon: <User className="h-5 w-5 text-primary" />,
+            trend: { value: 8, isPositive: true },
+            href: "/dashboard/users",
         },
         {
             title: "Enrolled Students",
             value: data.totalStudents,
-            subtitle: `${data.faceEnrolled} with face data`,
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground">
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                </svg>
-            ),
+            subtitle: `${data.faceEnrolled} with face data enrolled`,
+            icon: <Users className="h-5 w-5 text-primary" />,
+            trend: { value: 12, isPositive: true },
+            href: "/dashboard/students",
         },
         {
             title: "Attendance Sessions",
             value: data.totalSessions,
             subtitle: `${data.attendanceRate}% avg attendance rate`,
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground">
-                    <rect width="20" height="14" x="2" y="5" rx="2" /><path d="M2 10h20" />
-                </svg>
-            ),
+            icon: <Calendar className="h-5 w-5 text-primary" />,
+            trend: data.attendanceRate >= 90 ? { value: 5, isPositive: true } : { value: 3, isPositive: false },
+            href: "/dashboard/attendance",
         },
         {
             title: "FR Health Status",
             value: "Operational",
-            subtitle: "Engine responding normally",
+            subtitle: "Face recognition engine healthy",
+            icon: <Shield className="h-5 w-5 text-green-500" />,
             valueClass: "text-green-500",
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-green-500">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-            ),
         },
     ]
 
     return (
-        <div className="flex-1 space-y-4">
-            <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Dashboard Overview</h2>
+        <div className="flex-1 space-y-6">
+            {/* Welcome Section */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        Welcome back, {firstName}! 👋
+                    </h1>
+                    <p className="text-muted-foreground mt-1">
+                        Here&apos;s what&apos;s happening with your attendance system today.
+                    </p>
+                </div>
+                <div className="flex gap-2">
+                    <Link href="/dashboard/attendance">
+                        <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                            <QrCode className="mr-2 h-4 w-4" />
+                            Start Session
+                        </button>
+                    </Link>
+                </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <QuickAction
+                    title="Take Attendance"
+                    description="Start a new session"
+                    icon={<QrCode className="h-5 w-5 text-primary" />}
+                    href="/dashboard/attendance"
+                />
+                <QuickAction
+                    title="View Reports"
+                    description="Analytics & insights"
+                    icon={<Activity className="h-5 w-5 text-primary" />}
+                    href="/dashboard/reports"
+                />
+                <QuickAction
+                    title="Manage Students"
+                    description="Add or edit students"
+                    icon={<Users className="h-5 w-5 text-primary" />}
+                    href="/dashboard/students"
+                />
+                <QuickAction
+                    title="View Schedule"
+                    description="Session calendar"
+                    icon={<BookOpen className="h-5 w-5 text-primary" />}
+                    href="/dashboard/schedule"
+                />
             </div>
 
             {/* Stat Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {statCards.map(card => (
-                    <div key={card.title} className="rounded-xl border bg-card text-card-foreground shadow">
-                        <div className="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
-                            <h3 className="tracking-tight text-sm font-medium">{card.title}</h3>
-                            {card.icon}
-                        </div>
-                        <div className="p-6 pt-0">
-                            <div className={`text-2xl font-bold ${"valueClass" in card ? card.valueClass : ""}`}>
-                                {card.value}
-                            </div>
-                            <p className="text-xs text-muted-foreground">{card.subtitle}</p>
-                        </div>
-                    </div>
+                    <StatCard key={card.title} {...card} />
                 ))}
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                 {/* Recent Activity */}
-                <div className="rounded-xl border bg-card text-card-foreground shadow col-span-4">
+                <div className="rounded-xl border bg-card text-card-foreground shadow-sm col-span-4">
+                    <div className="p-6 border-b">
+                        <div className="flex items-center justify-between">
+                            <h3 className="tracking-tight text-lg font-semibold">Recent Activity</h3>
+                            <Link href="/dashboard/audit-logs" className="text-sm text-primary hover:underline">
+                                View all
+                            </Link>
+                        </div>
+                    </div>
                     <div className="p-6">
-                        <h3 className="tracking-tight text-lg font-medium mb-4">Recent Activity</h3>
                         {data.recentActivity.length === 0 ? (
-                            <div className="flex items-center justify-center h-[200px] text-muted-foreground text-sm">
-                                No recent activity recorded.
+                            <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground text-sm">
+                                <Clock className="h-12 w-12 mb-3 opacity-20" />
+                                <p>No recent activity recorded.</p>
                             </div>
                         ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {data.recentActivity.map((item: { action: string; entityType: string; createdAt: string; userName: string | null }, i: number) => (
                                     <div key={i} className="flex items-start gap-3 text-sm">
-                                        <div className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0" />
+                                        <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
                                         <div className="flex-1 min-w-0">
                                             <span className="font-medium">{item.userName ?? "System"}</span>
                                             {" "}
                                             <span className="text-muted-foreground">
-                                                {item.action.toLowerCase().replace(/_/g, " ")} {item.entityType.toLowerCase()}
+                                                {item.action.toLowerCase().replace(/_/g, " ")} {item.entityType?.toLowerCase()}
                                             </span>
                                         </div>
                                         <span className="text-xs text-muted-foreground shrink-0">
@@ -219,27 +324,45 @@ export default async function DashboardPage() {
                 </div>
 
                 {/* Upcoming Sessions */}
-                <div className="rounded-xl border bg-card text-card-foreground shadow col-span-3">
+                <div className="rounded-xl border bg-card text-card-foreground shadow-sm col-span-3">
+                    <div className="p-6 border-b">
+                        <div className="flex items-center justify-between">
+                            <h3 className="tracking-tight text-lg font-semibold">Upcoming Sessions</h3>
+                            <Link href="/dashboard/schedule" className="text-sm text-primary hover:underline">
+                                View calendar
+                            </Link>
+                        </div>
+                    </div>
                     <div className="p-6">
-                        <h3 className="tracking-tight text-lg font-medium mb-4">Upcoming Sessions</h3>
                         {data.upcomingSessions.length === 0 ? (
-                            <div className="flex items-center justify-center h-[200px] text-muted-foreground text-sm">
-                                No upcoming sessions scheduled.
+                            <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground text-sm">
+                                <Calendar className="h-12 w-12 mb-3 opacity-20" />
+                                <p>No upcoming sessions scheduled.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
                                 {data.upcomingSessions.map((s: { id: string; courseCode: string; courseName: string; sessionDate: string; startTime: string; status: string }) => (
-                                    <div key={s.id} className="flex items-center gap-3">
-                                        <div className={`h-2 w-2 rounded-full shrink-0 ${s.status === "ACTIVE" ? "bg-green-500" : "bg-muted-foreground"}`} />
+                                    <div key={s.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                                        <div className={`h-3 w-3 rounded-full shrink-0 ${s.status === "ACTIVE" ? "bg-green-500 animate-pulse" : s.status === "COMPLETED" ? "bg-blue-500" : "bg-muted-foreground"}`} />
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-medium leading-none truncate">
-                                                {s.courseCode} — {s.courseName}
+                                                {s.courseCode}
                                             </p>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                {new Date(s.sessionDate).toLocaleDateString()} at {formatSessionTime(s.startTime)}
+                                            <p className="text-xs text-muted-foreground mt-1.5 truncate">
+                                                {s.courseName}
                                             </p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <Clock className="h-3 w-3 text-muted-foreground" />
+                                                <span className="text-xs text-muted-foreground">
+                                                    {new Date(s.sessionDate).toLocaleDateString()} · {formatSessionTime(s.startTime)}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <span className={`text-xs font-medium shrink-0 ${s.status === "ACTIVE" ? "text-green-500" : "text-muted-foreground"}`}>
+                                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                                            s.status === "ACTIVE" ? "bg-green-100 text-green-700" : 
+                                            s.status === "COMPLETED" ? "bg-blue-100 text-blue-700" : 
+                                            "bg-muted text-muted-foreground"
+                                        }`}>
                                             {s.status}
                                         </span>
                                     </div>

@@ -62,6 +62,7 @@ export async function createUser(data: z.infer<typeof userSchema>) {
 
         const token = randomBytes(32).toString("hex")
         const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000)
+        console.log("[DEBUG] Creating token for:", result.email, "expiresAt:", expiresAt)
         await withDb(db => db.query(
             `INSERT INTO setup_tokens (id, token, email, expires_at, created_at) VALUES (gen_random_uuid(), $1, $2, $3, NOW())`,
             [token, result.email, expiresAt]
