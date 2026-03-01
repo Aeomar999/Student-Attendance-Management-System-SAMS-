@@ -14,7 +14,7 @@ interface SetupTokenRow {
 export async function getSetupTokenDetails(token: string) {
     try {
         console.log("[DEBUG] Looking for token:", token);
-        
+
         const tokens = await queryRaw<SetupTokenRow>(
             'SELECT id, token, email, expires_at, created_at FROM setup_tokens WHERE token = $1',
             [token]
@@ -105,7 +105,7 @@ export async function requestPasswordReset(email: string) {
         `;
 
         // In production, send email here. For now, log the reset URL.
-        const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${token}`;
+        const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")}/reset-password?token=${token}`;
         console.warn(`[SAMS] Password reset link for ${user.email}: ${resetUrl}`);
 
         return { success: true, message: "If an account exists with that email, a reset link has been sent." };

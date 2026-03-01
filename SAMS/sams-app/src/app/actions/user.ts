@@ -68,7 +68,7 @@ export async function createUser(data: z.infer<typeof userSchema>) {
             [token, result.email, expiresAt]
         ))
 
-        const magicLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/setup-account?token=${token}`
+        const magicLink = `${process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")}/setup-account?token=${token}`
         console.warn(`[EMAIL MOCK] Setup link for ${result.email}: ${magicLink}`)
 
         revalidatePath("/dashboard/users")
@@ -163,7 +163,7 @@ export async function adminSendPasswordReset(id: string) {
             [token, email, expiresAt]
         ))
 
-        const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/setup-account?token=${token}`
+        const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")}/setup-account?token=${token}`
         console.warn(`[EMAIL MOCK] Password reset link for ${email}: ${resetLink}`)
 
         return { success: true, data: { resetLink, email } }
