@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Menu, Search, Mail } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
@@ -57,6 +58,7 @@ export function Header() {
 
             <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 mr-1">
+                    <ThemeToggle />
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                         <Mail className="h-4 w-4" />
                     </Button>

@@ -277,7 +277,7 @@ export default async function DashboardPage() {
     return (
         <div className="flex-1 space-y-8 pb-8 animate-in fade-in duration-500">
             {/* Welcome Section */}
-            <Card className="relative overflow-hidden p-8 sm:p-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <Card className="relative overflow-hidden p-6 sm:p-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div className="absolute top-0 right-0 p-32 bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
                 <div className="absolute bottom-0 left-0 p-24 bg-secondary/5 blur-[80px] rounded-full pointer-events-none" />
                 

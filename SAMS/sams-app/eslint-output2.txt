@@ -1,0 +1,47 @@
+﻿
+C:\Users\Jerry\Desktop\PROJECT 2026\SAMS\SAMS\sams-app\check-users.ts
+  13:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  14:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\Jerry\Desktop\PROJECT 2026\SAMS\SAMS\sams-app\create-admin.ts
+   9:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  33:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  34:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  35:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\Jerry\Desktop\PROJECT 2026\SAMS\SAMS\sams-app\migrate-courses.ts
+  17:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  34:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  45:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  52:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  55:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\Jerry\Desktop\PROJECT 2026\SAMS\SAMS\sams-app\scripts\create-institution.ts
+  17:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\Jerry\Desktop\PROJECT 2026\SAMS\SAMS\sams-app\src\app\actions\auth.ts
+  16:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  24:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\Jerry\Desktop\PROJECT 2026\SAMS\SAMS\sams-app\src\app\actions\user.ts
+  65:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\Jerry\Desktop\PROJECT 2026\SAMS\SAMS\sams-app\src\components\ui\combobox.tsx
+  277:3  error  'children' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Jerry\Desktop\PROJECT 2026\SAMS\SAMS\sams-app\src\components\ui\sidebar.tsx
+  611:26  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\Jerry\Desktop\PROJECT 2026\SAMS\SAMS\sams-app\src\components\ui\sidebar.tsx:611:26
+  609 |   // Random width between 50 to 90%.
+  610 |   const width = React.useMemo(() => {
+> 611 |     return `${Math.floor(Math.random() * 40) + 50}%`
+      |                          ^^^^^^^^^^^^^ Cannot call impure function
+  612 |   }, [])
+  613 |
+  614 |   return (  react-hooks/purity
+
+Γ£û 17 problems (2 errors, 15 warnings)
+
