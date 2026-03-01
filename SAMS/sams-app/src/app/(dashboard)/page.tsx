@@ -78,10 +78,10 @@ export default async function DashboardPage() {
                 <div className="rounded-xl border bg-card text-card-foreground shadow">
                     <div className="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
                         <h3 className="tracking-tight text-sm font-medium">FR Health Status</h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-green-500"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-primary"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
                     </div>
                     <div className="p-6 pt-0">
-                        <div className="text-2xl font-bold text-green-500">Operational</div>
+                        <div className="text-2xl font-bold text-primary">Operational</div>
                         <p className="text-xs text-muted-foreground">Engine responding normally</p>
                     </div>
                 </div>

@@ -11,8 +11,11 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Menu, Search, Mail } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
+import { Sidebar } from "@/components/layout/sidebar";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 export function Header() {
     const { data: session } = useSession();
@@ -24,29 +27,53 @@ export function Header() {
     };
 
     const userName = session?.user?.name || session?.user?.email?.split('@')[0] || "User";
-    const firstName = userName.split(' ')[0];
 
     return (
-        <header className="flex h-16 items-center justify-between border-b px-6 bg-background">
-            <div className="flex items-center">
-                <Button variant="ghost" size="icon" className="md:hidden mr-2">
-                    <Menu className="h-5 w-5" />
-                    <span className="sr-only">Toggle mobile menu</span>
-                </Button>
-                <span className="text-sm font-medium text-muted-foreground hidden sm:inline">
-                    Welcome, {firstName}
-                </span>
+        <header className="flex h-14 items-center justify-between border-b border-border px-4 md:px-6 bg-background text-foreground sticky top-0 z-10">
+            <div className="flex items-center flex-1 gap-4">
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon" className="md:hidden">
+                            <Menu className="h-5 w-5" />
+                            <span className="sr-only">Toggle mobile menu</span>
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="p-0 border-r-0 w-64 bg-background">
+                        <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                        <SheetDescription className="sr-only">Main application navigation sidebar.</SheetDescription>
+                        <Sidebar className="w-full border-none h-full" />
+                    </SheetContent>
+                </Sheet>
+                
+                <div className="relative hidden md:flex items-center w-full max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                    <Input
+                        type="search"
+                        placeholder="Search..."
+                        className="flex h-9 w-full rounded-full border-none bg-muted/50 px-3 py-1 pl-9 text-sm shadow-none transition-colors focus-visible:bg-background focus-visible:ring-1"
+                    />
+                </div>
             </div>
 
-            <div className="flex items-center gap-4">
-                <NotificationBell />
+            <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 mr-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Mail className="h-4 w-4" />
+                    </Button>
+                    <NotificationBell />
+                </div>
+                
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                        <Button variant="ghost" className="relative h-10 w-auto rounded-full pl-1 pr-3 hover:bg-muted font-normal flex items-center gap-2">
                             <Avatar className="h-8 w-8">
                                 <AvatarImage src="" alt={session?.user?.email || "User"} />
-                                <AvatarFallback>{getInitials(session?.user?.email)}</AvatarFallback>
+                                <AvatarFallback className="bg-primary text-primary-foreground text-xs">{getInitials(session?.user?.email)}</AvatarFallback>
                             </Avatar>
+                            <div className="hidden md:flex flex-col items-start leading-none justify-center">
+                                <span className="text-sm font-medium">{userName}</span>
+                                <span className="text-[10px] text-muted-foreground">{session?.user?.email}</span>
+                            </div>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="end" forceMount>

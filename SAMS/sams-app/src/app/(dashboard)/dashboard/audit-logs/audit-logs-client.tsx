@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
     Table,
     TableBody,
@@ -24,12 +25,12 @@ import {
 import { getAuditLogs, type AuditLogRow } from "@/app/actions/audit";
 
 const ACTION_COLORS: Record<string, string> = {
-    CREATE: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+    CREATE: "bg-primary/10 text-primary border-primary/20",
     UPDATE: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-    DELETE: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+    DELETE: "bg-destructive/10 text-destructive border-destructive/20",
     LOGIN: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
     LOGOUT: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
-    FAILED_LOGIN: "bg-red-200 text-red-900 dark:bg-red-900 dark:text-red-200",
+    FAILED_LOGIN: "bg-destructive/20 text-destructive dark:bg-destructive dark:text-destructive-foreground",
     SUSPEND: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
     ACTIVATE: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300",
 };
@@ -142,7 +143,7 @@ export function AuditLogsClient({
             </div>
 
             {/* Table */}
-            <div className="rounded-lg border bg-card overflow-hidden">
+            <Card className="rounded-lg border bg-card overflow-hidden">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -192,7 +193,7 @@ export function AuditLogsClient({
                         )}
                     </TableBody>
                 </Table>
-            </div>
+            </Card>
 
             {/* Pagination */}
             {total > limit && (

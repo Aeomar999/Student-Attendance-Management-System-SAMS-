@@ -7,13 +7,14 @@ import { toast } from "sonner"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import {
-    Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger,
+    Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SheetFooter,
 } from "@/components/ui/sheet"
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -140,16 +141,16 @@ export function AttendanceClient({ initialSessions, initialStats, courses }: Pro
     }
 
     const statusBadge = (status: string) => {
-        if (status === "ACTIVE") return <Badge className="bg-green-600">Active</Badge>
+        if (status === "ACTIVE") return <Badge className="bg-primary">Active</Badge>
         if (status === "COMPLETED") return <Badge variant="secondary">Completed</Badge>
         return <Badge variant="outline">{status}</Badge>
     }
 
-    const recordStatusIcon = (status: string) => {
-        if (status === "PRESENT") return <CheckCircle2 className="h-4 w-4 text-green-500" />
-        if (status === "LATE") return <Clock className="h-4 w-4 text-amber-500" />
+const recordStatusIcon = (status: string) => {
+        if (status === "PRESENT") return <CheckCircle2 className="h-4 w-4 text-primary" />
+        if (status === "LATE") return <Clock className="h-4 w-4 text-yellow-500" />
         if (status === "EXCUSED") return <AlertCircle className="h-4 w-4 text-blue-500" />
-        return <XCircle className="h-4 w-4 text-red-400" />
+        return <XCircle className="h-4 w-4 text-destructive" />
     }
 
     return (
@@ -167,16 +168,16 @@ export function AttendanceClient({ initialSessions, initialStats, courses }: Pro
                 </div>
                 <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild>
-                        <Button>
+                        <Button >
                             <Plus className="mr-2 h-4 w-4" /> Start Session
                         </Button>
                     </SheetTrigger>
-                    <SheetContent className="sm:max-w-md">
+                    <SheetContent>
                         <SheetHeader>
                             <SheetTitle>Start Attendance Session</SheetTitle>
                             <SheetDescription>Create a new attendance session for a course.</SheetDescription>
                         </SheetHeader>
-                        <form onSubmit={handleCreateSession} className="space-y-4 py-4">
+                        <form onSubmit={handleCreateSession} className="space-y-4 mt-4">
                             <div className="space-y-2">
                                 <Label>Course *</Label>
                                 <Select value={courseId} onValueChange={setCourseId}>
@@ -220,44 +221,73 @@ export function AttendanceClient({ initialSessions, initialStats, courses }: Pro
                                 />
                                 <p className="text-xs text-muted-foreground">Students arriving within this window are marked Late instead of Absent.</p>
                             </div>
-                            <div className="pt-4 flex justify-end gap-2 border-t">
+                            <SheetFooter className="mt-6">
                                 <Button type="button" variant="ghost" onClick={() => setIsSheetOpen(false)}>Cancel</Button>
                                 <Button type="submit" disabled={isLoading || !courseId}>
                                     {isLoading ? "Starting..." : "Start Session"}
                                 </Button>
-                            </div>
+                            </SheetFooter>
                         </form>
                     </SheetContent>
                 </Sheet>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                    { label: "Total Sessions", value: stats.totalSessions },
-                    { label: "Attendance Rate", value: `${stats.attendanceRate}%`, color: stats.attendanceRate >= 75 ? "text-green-500" : "text-amber-500" },
-                    { label: "Present Records", value: stats.totalPresent, color: "text-green-500" },
-                    { label: "Active Courses", value: stats.activeCourses },
-                ].map(stat => (
-                    <div key={stat.label} className="rounded-lg border bg-card p-4">
-                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</div>
-                        <div className={`mt-1 text-2xl font-bold ${"color" in stat ? stat.color : ""}`}>{stat.value}</div>
-                    </div>
-                ))}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <Card className="bg-primary text-primary-foreground transition-all duration-300">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-medium text-white/80 uppercase tracking-wider">
+                            Total Sessions
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold">{stats.totalSessions}</div>
+                    </CardContent>
+                </Card>
+                <Card className="shadow-sm transition-all duration-300">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            Attendance Rate
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className={stats.attendanceRate >= 75 ? "text-primary" : "text-yellow-600"}>
+                        <div className="text-3xl font-bold">{stats.attendanceRate}%</div>
+                    </CardContent>
+                </Card>
+                <Card className="shadow-sm transition-all duration-300">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            Present Records
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-primary">
+                        <div className="text-3xl font-bold">{stats.totalPresent}</div>
+                    </CardContent>
+                </Card>
+                <Card className="shadow-sm transition-all duration-300">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            Active Courses
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold">{stats.activeCourses}</div>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Sessions Table */}
-            <div className="rounded-md border bg-card">
+            <Card className="overflow-hidden shadow-sm mt-6">
                 <Table>
                     <TableHeader>
-                        <TableRow>
-                            <TableHead>Course</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Time</TableHead>
-                            <TableHead className="text-center">Present</TableHead>
-                            <TableHead className="text-center">Absent</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead className="font-semibold">Course</TableHead>
+                            <TableHead className="font-semibold">Date</TableHead>
+                            <TableHead className="font-semibold">Time</TableHead>
+                            <TableHead className="font-semibold text-center">Present</TableHead>
+                            <TableHead className="font-semibold text-center">Absent</TableHead>
+                            <TableHead className="font-semibold">Status</TableHead>
+                            <TableHead className="font-semibold text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -296,15 +326,14 @@ export function AttendanceClient({ initialSessions, initialStats, courses }: Pro
                                             <> → {format(new Date(session.endTime), "HH:mm")}</>
                                         )}
                                     </TableCell>
-                                    <TableCell className="text-center font-medium text-green-600">{session.totalPresent}</TableCell>
-                                    <TableCell className="text-center font-medium text-red-500">{session.totalAbsent}</TableCell>
+<TableCell className="text-center font-medium text-primary">{session.totalPresent}</TableCell>
+                                    <TableCell className="text-center font-medium text-destructive">{session.totalAbsent}</TableCell>
                                     <TableCell>{statusBadge(session.status)}</TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end items-center gap-2" onClick={e => e.stopPropagation()}>
                                             {session.status === "ACTIVE" && (
-                                                <Button
+<Button
                                                     size="sm" variant="outline"
-                                                    className="text-red-600 border-red-200 hover:bg-red-50"
                                                     onClick={() => handleCloseSession(session.id)}
                                                     disabled={isLoading}
                                                 >
@@ -312,7 +341,7 @@ export function AttendanceClient({ initialSessions, initialStats, courses }: Pro
                                                 </Button>
                                             )}
                                             <Link href={`/dashboard/attendance/${session.id}`}>
-                                                <Button size="sm" variant="ghost" className="text-xs gap-1">
+                                                <Button size="sm" variant="ghost" className="gap-1">
                                                     <ExternalLink className="h-3 w-3" /> Detail
                                                 </Button>
                                             </Link>
@@ -336,34 +365,34 @@ export function AttendanceClient({ initialSessions, initialStats, courses }: Pro
                                                         No records yet. Mark students present/absent below or use facial recognition.
                                                     </p>
                                                 ) : (
-                                                    <table className="w-full text-sm">
-                                                        <thead>
-                                                            <tr className="text-xs text-muted-foreground uppercase">
-                                                                <th className="text-left py-1 pr-4">Student</th>
-                                                                <th className="text-left py-1 pr-4">Student ID</th>
-                                                                <th className="text-left py-1 pr-4">Status</th>
-                                                                <th className="text-left py-1">Source</th>
+                                                    <Table className="w-full text-sm">
+                                                        <TableHeader>
+                                                            <TableRow className="text-xs text-muted-foreground uppercase border-b-border/50">
+                                                                <TableHead className="text-left py-1 pr-4 h-auto bg-transparent">Student</TableHead>
+                                                                <TableHead className="text-left py-1 pr-4 h-auto bg-transparent">Student ID</TableHead>
+                                                                <TableHead className="text-left py-1 pr-4 h-auto bg-transparent">Status</TableHead>
+                                                                <TableHead className="text-left py-1 h-auto bg-transparent">Source</TableHead>
                                                                 {session.status === "ACTIVE" && (
-                                                                    <th className="text-right py-1">Override</th>
+                                                                    <TableHead className="text-right py-1 h-auto bg-transparent">Override</TableHead>
                                                                 )}
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
+                                                            </TableRow>
+                                                        </TableHeader>
+                                                        <TableBody>
                                                             {(sessionRecords[session.id] ?? []).map(rec => (
-                                                                <tr key={rec.id} className="border-t border-border/50">
-                                                                    <td className="py-2 pr-4 font-medium">{rec.studentName}</td>
-                                                                    <td className="py-2 pr-4 font-mono text-xs">{rec.studentRefId}</td>
-                                                                    <td className="py-2 pr-4">
+                                                                <TableRow key={rec.id} className="border-border/50 border-b-0 hover:bg-muted/50">
+                                                                    <TableCell className="py-2 pr-4 font-medium">{rec.studentName}</TableCell>
+                                                                    <TableCell className="py-2 pr-4 font-mono text-xs">{rec.studentRefId}</TableCell>
+                                                                    <TableCell className="py-2 pr-4">
                                                                         <div className="flex items-center gap-1">
                                                                             {recordStatusIcon(rec.status)}
                                                                             <span>{rec.status}</span>
                                                                         </div>
-                                                                    </td>
-                                                                    <td className="py-2 text-muted-foreground">
+                                                                    </TableCell>
+                                                                    <TableCell className="py-2 text-muted-foreground">
                                                                         {rec.isManual ? "Manual" : "FR Engine"}
-                                                                    </td>
+                                                                    </TableCell>
                                                                     {session.status === "ACTIVE" && (
-                                                                        <td className="py-2 text-right">
+                                                                        <TableCell className="py-2 text-right">
                                                                             <div className="flex flex-col items-end gap-1">
                                                                                 <div className="flex gap-1">
                                                                                     {(["PRESENT", "LATE", "ABSENT"] as const).map(s => (
@@ -390,19 +419,19 @@ export function AttendanceClient({ initialSessions, initialStats, courses }: Pro
                                                                                 </div>
                                                                                 {rec.status === "EXCUSED" && (
                                                                                     <Input
-                                                                                        className="h-6 text-xs w-40"
+                                                                                        className="h-6 text-xs w-40 mt-1"
                                                                                         placeholder="Reason (optional)"
                                                                                         value={excuseReason[rec.studentId] ?? ""}
                                                                                         onChange={e => setExcuseReason(prev => ({...prev, [rec.studentId]: e.target.value}))}
                                                                                     />
                                                                                 )}
                                                                             </div>
-                                                                        </td>
+                                                                        </TableCell>
                                                                     )}
-                                                                </tr>
+                                                                </TableRow>
                                                             ))}
-                                                        </tbody>
-                                                    </table>
+                                                        </TableBody>
+                                                    </Table>
                                                 )}
                                             </div>
                                         </TableCell>
@@ -412,7 +441,7 @@ export function AttendanceClient({ initialSessions, initialStats, courses }: Pro
                         ))}
                     </TableBody>
                 </Table>
-            </div>
+            </Card>
         </div>
     )
 }

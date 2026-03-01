@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Trash2, Edit, ScanFace, Camera, UserPlus, Upload, Loader2, HelpCircle, Download, FileText } from "lucide-react";
+import { UserPlus, Edit, Trash2, ScanFace, Camera, Loader2, Upload, HelpCircle, FileText, Download } from "lucide-react";
 import { toast } from "sonner";
 import Webcam from "react-webcam";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Table,
     TableBody,
@@ -222,7 +223,7 @@ export function StudentClient({
                 <div className="flex gap-2">
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant="outline">
+                            <Button variant="outline" >
                                 <HelpCircle className="mr-2 h-4 w-4" />
                                 CSV Format
                             </Button>
@@ -240,55 +241,55 @@ export function StudentClient({
                             <div className="space-y-4 mt-4">
                                 <div>
                                     <h4 className="font-semibold mb-2">Required Column Headers:</h4>
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-sm border-collapse">
-                                            <thead>
-                                                <tr className="bg-muted">
-                                                    <th className="border px-3 py-2 text-left font-medium">Column</th>
-                                                    <th className="border px-3 py-2 text-left font-medium">Data Type</th>
-                                                    <th className="border px-3 py-2 text-left font-medium">Required</th>
-                                                    <th className="border px-3 py-2 text-left font-medium">Validation Rules</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td className="border px-3 py-2 font-mono text-[#1976D2]">studentId</td>
-                                                    <td className="border px-3 py-2">String</td>
-                                                    <td className="border px-3 py-2 text-[#F44336]">Yes</td>
-                                                    <td className="border px-3 py-2">Unique, alphanumeric</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="border px-3 py-2 font-mono text-[#1976D2]">firstName</td>
-                                                    <td className="border px-3 py-2">String</td>
-                                                    <td className="border px-3 py-2 text-[#F44336]">Yes</td>
-                                                    <td className="border px-3 py-2">1-100 characters</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="border px-3 py-2 font-mono text-[#1976D2]">lastName</td>
-                                                    <td className="border px-3 py-2">String</td>
-                                                    <td className="border px-3 py-2 text-[#F44336]">Yes</td>
-                                                    <td className="border px-3 py-2">1-100 characters</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="border px-3 py-2 font-mono text-[#1976D2]">email</td>
-                                                    <td className="border px-3 py-2">String</td>
-                                                    <td className="border px-3 py-2 text-[#F44336]">Yes</td>
-                                                    <td className="border px-3 py-2">Valid email format, unique</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="border px-3 py-2 font-mono text-[#1976D2]">program</td>
-                                                    <td className="border px-3 py-2">String</td>
-                                                    <td className="border px-3 py-2 text-[#F44336]">Yes</td>
-                                                    <td className="border px-3 py-2">e.g., Computer Science, Engineering</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="border px-3 py-2 font-mono text-[#1976D2]">yearOfStudy</td>
-                                                    <td className="border px-3 py-2">Integer</td>
-                                                    <td className="border px-3 py-2 text-[#F44336]">Yes</td>
-                                                    <td className="border px-3 py-2">1-6 (defaults to 1 if invalid)</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                    <div className="overflow-x-auto rounded-md border">
+                                        <Table className="w-full text-sm border-collapse">
+                                            <TableHeader>
+                                                <TableRow className="bg-muted hover:bg-muted">
+                                                    <TableHead className="border px-3 py-2 text-left font-semibold text-foreground">Column</TableHead>
+                                                    <TableHead className="border px-3 py-2 text-left font-semibold text-foreground">Data Type</TableHead>
+                                                    <TableHead className="border px-3 py-2 text-left font-semibold text-foreground">Required</TableHead>
+                                                    <TableHead className="border px-3 py-2 text-left font-semibold text-foreground">Validation Rules</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                <TableRow>
+                                                    <TableCell className="border px-3 py-2 font-mono text-[#1976D2]">studentId</TableCell>
+                                                    <TableCell className="border px-3 py-2">String</TableCell>
+                                                    <TableCell className="border px-3 py-2 text-[#F44336]">Yes</TableCell>
+                                                    <TableCell className="border px-3 py-2">Unique, alphanumeric</TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell className="border px-3 py-2 font-mono text-[#1976D2]">firstName</TableCell>
+                                                    <TableCell className="border px-3 py-2">String</TableCell>
+                                                    <TableCell className="border px-3 py-2 text-[#F44336]">Yes</TableCell>
+                                                    <TableCell className="border px-3 py-2">1-100 characters</TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell className="border px-3 py-2 font-mono text-[#1976D2]">lastName</TableCell>
+                                                    <TableCell className="border px-3 py-2">String</TableCell>
+                                                    <TableCell className="border px-3 py-2 text-[#F44336]">Yes</TableCell>
+                                                    <TableCell className="border px-3 py-2">1-100 characters</TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell className="border px-3 py-2 font-mono text-[#1976D2]">email</TableCell>
+                                                    <TableCell className="border px-3 py-2">String</TableCell>
+                                                    <TableCell className="border px-3 py-2 text-[#F44336]">Yes</TableCell>
+                                                    <TableCell className="border px-3 py-2">Valid email format, unique</TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell className="border px-3 py-2 font-mono text-[#1976D2]">program</TableCell>
+                                                    <TableCell className="border px-3 py-2">String</TableCell>
+                                                    <TableCell className="border px-3 py-2 text-[#F44336]">Yes</TableCell>
+                                                    <TableCell className="border px-3 py-2">e.g., Computer Science, Engineering</TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell className="border px-3 py-2 font-mono text-[#1976D2]">yearOfStudy</TableCell>
+                                                    <TableCell className="border px-3 py-2">Integer</TableCell>
+                                                    <TableCell className="border px-3 py-2 text-[#F44336]">Yes</TableCell>
+                                                    <TableCell className="border px-3 py-2">1-6 (defaults to 1 if invalid)</TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        </Table>
                                     </div>
                                 </div>
                                 <div>
@@ -329,7 +330,7 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                             </div>
                         </DialogContent>
                     </Dialog>
-                    <input
+                    <Input
                         type="file" 
                         accept=".csv" 
                         ref={fileInputRef} 
@@ -358,7 +359,7 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                             }
                         }}
                     />
-                    <Button variant="outline" disabled={isImporting} onClick={() => fileInputRef.current?.click()}>
+                    <Button variant="outline" disabled={isImporting} onClick={() => fileInputRef.current?.click()} >
                         {isImporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
                         Import CSV
                     </Button>
@@ -367,11 +368,11 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                         if (!open) resetForm();
                     }}>
                         <SheetTrigger asChild>
-                            <Button onClick={handleOpenNew}>
+                            <Button onClick={handleOpenNew} >
                                 <UserPlus className="mr-2 h-4 w-4" /> Add Student
                             </Button>
                         </SheetTrigger>
-                    <SheetContent className="sm:max-w-xl overflow-y-auto">
+                    <SheetContent className="overflow-y-auto overflow-x-hidden">
                         <SheetHeader>
                             <SheetTitle>{editingStudent ? "Edit Student" : "Register Student"}</SheetTitle>
                             <SheetDescription>
@@ -480,37 +481,51 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-4">
-                <div className="rounded-lg border bg-card p-4">
-                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Total Students
-                    </div>
-                    <div className="mt-1 text-2xl font-bold">{students.length}</div>
-                </div>
-                <div className="rounded-lg border bg-card p-4">
-                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Face Enrolled
-                    </div>
-                    <div className="mt-1 text-2xl font-bold text-green-500">{enrolledCount}</div>
-                </div>
-                <div className="rounded-lg border bg-card p-4">
-                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Pending Enrollment
-                    </div>
-                    <div className="mt-1 text-2xl font-bold text-amber-500">{students.length - enrolledCount}</div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="bg-primary text-primary-foreground transition-all duration-300 relative overflow-hidden group">
+                    <CardHeader className="pb-2 relative z-10">
+                        <CardTitle className="text-xs font-medium text-white/80 uppercase tracking-wider">
+                            Total Students
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                        <div className="text-3xl font-bold">{students.length}</div>
+                    </CardContent>
+                </Card>
+                <Card className="shadow-sm transition-all duration-300 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-linear-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <CardHeader className="pb-2 relative z-10">
+                        <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            Face Enrolled
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                        <div className="text-3xl font-bold text-primary">{enrolledCount}</div>
+                    </CardContent>
+                </Card>
+                <Card className="shadow-sm transition-all duration-300 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-linear-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <CardHeader className="pb-2 relative z-10">
+                        <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            Pending Enrollment
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                        <div className="text-3xl font-bold text-yellow-600">{students.length - enrolledCount}</div>
+                    </CardContent>
+                </Card>
             </div>
 
-            <div className="rounded-md border bg-card">
+            <Card className="overflow-hidden shadow-sm">
                 <Table>
                     <TableHeader>
-                        <TableRow>
-                            <TableHead>Student ID</TableHead>
-                            <TableHead>Name / Email</TableHead>
-                            <TableHead>Program (Year)</TableHead>
-                            <TableHead>Face Enrolled</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead className="font-semibold">Student ID</TableHead>
+                            <TableHead className="font-semibold">Name / Email</TableHead>
+                            <TableHead className="font-semibold">Program (Year)</TableHead>
+                            <TableHead className="font-semibold">Face Enrolled</TableHead>
+                            <TableHead className="font-semibold">Status</TableHead>
+                            <TableHead className="font-semibold text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -522,8 +537,8 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                             </TableRow>
                         ) : (
                             students.map((student) => (
-                                <TableRow key={student.id}>
-                                    <TableCell className="font-mono text-sm font-medium">{student.studentId}</TableCell>
+                                <TableRow key={student.id} className="hover:bg-muted/30 transition-colors">
+                                    <TableCell className="font-mono text-sm font-medium text-foreground/80">{student.studentId}</TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
                                             <Link
@@ -536,19 +551,19 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        {student.program} <span className="text-muted-foreground">(Yr {student.yearOfStudy})</span>
+                                        <span className="font-medium">{student.program}</span> <span className="text-muted-foreground">(Yr {student.yearOfStudy})</span>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2">
-                                            <ScanFace className={`h-4 w-4 ${student.faceEnrolled ? "text-green-500" : "text-amber-500"}`} />
-                                            <span className={`text-sm ${student.faceEnrolled ? "text-green-500" : "text-amber-500"}`}>
+<ScanFace className={`h-4 w-4 ${student.faceEnrolled ? "text-primary" : "text-yellow-500"}`} />
+                                            <span className={`text-sm font-medium ${student.faceEnrolled ? "text-primary" : "text-yellow-600"}`}>
                                                 {student.faceEnrolled ? "Yes" : "Pending"}
                                             </span>
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant={student.status === "ACTIVE" ? "default" : "secondary"} className={student.status === "ACTIVE" ? "bg-green-600" : ""}>
-                                            {student.status.toLowerCase()}
+                                        <Badge variant={student.status === "ACTIVE" ? "default" : "secondary"} className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${student.status === "ACTIVE" ? "bg-primary/10 text-primary" : ""}`}>
+                                            {student.status.charAt(0).toUpperCase() + student.status.slice(1).toLowerCase()}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -556,6 +571,7 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                                             <Button 
                                                 variant="ghost" 
                                                 size="icon" 
+                                                
                                                 onClick={() => handleOpenEdit(student)}
                                             >
                                                 <Edit className="h-4 w-4" />
@@ -563,7 +579,7 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                                             <Button 
                                                 variant="ghost" 
                                                 size="icon" 
-                                                className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                                                className="rounded-full text-destructive hover:text-destructive hover:bg-destructive/10"
                                                 onClick={() => handleDelete(student.id, `${student.firstName} ${student.lastName}`)}
                                             >
                                                 <Trash2 className="h-4 w-4" />
@@ -575,7 +591,7 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                         )}
                     </TableBody>
                 </Table>
-            </div>
+            </Card>
         </div>
     );
 }

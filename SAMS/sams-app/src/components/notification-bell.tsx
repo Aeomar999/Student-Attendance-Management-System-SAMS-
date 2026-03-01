@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, memo } from "react"
 import { Bell, Check, CheckCheck, Filter, AlertTriangle, Info, CheckCircle, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
     getNotifications,
     getUnreadCount,
@@ -24,9 +25,9 @@ const NotificationItem = memo(function NotificationItem({
 }) {
     const getTypeConfig = (type: string) => {
         switch (type) {
-            case "WARNING": return { icon: AlertTriangle, color: "text-amber-500", bg: "bg-amber-500", border: "border-l-amber-500" }
-            case "ALERT": return { icon: AlertCircle, color: "text-red-500", bg: "bg-red-500", border: "border-l-red-500" }
-            case "SUCCESS": return { icon: CheckCircle, color: "text-green-500", bg: "bg-green-500", border: "border-l-green-500" }
+            case "WARNING": return { icon: AlertTriangle, color: "text-yellow-500", bg: "bg-yellow-500", border: "border-l-yellow-500" }
+            case "ALERT": return { icon: AlertCircle, color: "text-destructive", bg: "bg-destructive", border: "border-l-destructive" }
+            case "SUCCESS": return { icon: CheckCircle, color: "text-primary", bg: "bg-primary", border: "border-l-primary" }
             default: return { icon: Info, color: "text-blue-500", bg: "bg-blue-500", border: "border-l-blue-500" }
         }
     }
@@ -35,29 +36,31 @@ const NotificationItem = memo(function NotificationItem({
     const Icon = config.icon
 
     return (
-        <div className={`flex items-start gap-3 border-b border-l-4 px-4 py-3 text-sm transition-colors last:border-b-0
+        <div className={`relative flex items-start gap-3 border-b border-border/40 border-l-4 p-4 text-sm transition-colors last:border-b-0
             ${config.border}
-            ${notification.isRead ? "opacity-60" : "bg-muted/30"}`}>
-            <div className={`shrink-0 p-1.5 rounded-full ${config.bg}/10 ${config.color}`}>
-                <Icon className="h-3.5 w-3.5" />
+            ${notification.isRead ? "opacity-60 bg-transparent" : "bg-muted/10 hover:bg-muted/20"}`}>
+            <div className={`shrink-0 p-2 rounded-full ${config.bg}/10 ${config.color}`}>
+                <Icon className="h-4 w-4" />
             </div>
             <div className="flex-1 min-w-0">
-                <div className="font-medium truncate">{notification.title}</div>
-                <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                <div className="font-semibold text-foreground truncate">{notification.title}</div>
+                <div className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                     {notification.message}
                 </div>
-                <div className="text-xs text-muted-foreground/50 mt-1">
+                <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/60 mt-2">
                     {new Date(notification.createdAt).toLocaleDateString()}
                 </div>
             </div>
             {!notification.isRead && (
-                <button
+                <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => onMarkRead(notification.id)}
-                    className="shrink-0 p-1 text-muted-foreground hover:text-primary rounded"
+                    className="shrink-0 h-6 w-6 text-muted-foreground hover:text-primary rounded"
                     title="Mark as read"
                 >
                     <Check className="h-3.5 w-3.5" />
-                </button>
+                </Button>
             )}
         </div>
     )
@@ -144,7 +147,7 @@ export function NotificationBell() {
             >
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                    <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">
                         {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                 )}
@@ -154,30 +157,35 @@ export function NotificationBell() {
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
 
-                    <div className="absolute right-0 top-full mt-2 z-50 w-80 max-h-96 overflow-y-auto rounded-lg border bg-popover shadow-lg">
-                        <div className="sticky top-0 flex flex-col gap-2 border-b bg-popover p-3">
+                    <div className="absolute right-0 top-full mt-2 z-50 w-80 sm:w-96 max-h-[85vh] overflow-y-auto rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                        <div className="sticky top-0 flex flex-col gap-3 border-b border-border/50 bg-card/95 backdrop-blur-xl p-4 z-10">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-semibold">Notifications</h3>
+                                <h3 className="text-base font-semibold tracking-tight text-foreground">Notifications</h3>
                                 {unreadCount > 0 && (
-                                    <button
+                                    <Button
+                                        variant="link"
+                                        size="sm"
                                         onClick={handleMarkAllRead}
-                                        className="flex items-center gap-1 text-xs text-primary hover:underline"
+                                        className="h-auto p-0 flex items-center gap-1 text-xs text-primary"
                                     >
                                         <CheckCheck className="h-3 w-3" /> Mark all read
-                                    </button>
+                                    </Button>
                                 )}
                             </div>
                             <div className="flex items-center gap-2">
-                                <Filter className="h-3 w-3 text-muted-foreground" />
-                                <select
-                                    value={filter}
-                                    onChange={(e) => setFilter(e.target.value as NotificationFilter)}
-                                    className="text-xs bg-background border rounded px-2 py-1 flex-1"
-                                >
-                                    {filterOptions.map(opt => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                    ))}
-                                </select>
+                                <Filter className="h-4 w-4 text-muted-foreground" />
+                                <Select value={filter} onValueChange={(val) => setFilter(val as NotificationFilter)}>
+                                    <SelectTrigger className="h-8 text-xs font-medium bg-muted/30 border-none border-border/50 rounded-full px-3 w-full">
+                                        <SelectValue placeholder="Filter notifications" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {filterOptions.map(opt => (
+                                            <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                                                {opt.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                         {filteredNotifications.length === 0 ? (

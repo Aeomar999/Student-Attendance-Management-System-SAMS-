@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
@@ -46,9 +47,9 @@ type Student = {
 };
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; class: string }> = {
-    PRESENT: { label: "Present", icon: CheckCircle2, class: "text-green-600" },
+PRESENT: { label: "Present", icon: CheckCircle2, class: "text-primary" },
     LATE: { label: "Late", icon: Clock, class: "text-yellow-600" },
-    ABSENT: { label: "Absent", icon: XCircle, class: "text-red-600" },
+    ABSENT: { label: "Absent", icon: XCircle, class: "text-destructive" },
     EXCUSED: { label: "Excused", icon: AlertCircle, class: "text-blue-600" },
 };
 
@@ -69,7 +70,7 @@ export function StudentDetailClient({
             </Link>
 
             {/* Profile card */}
-            <div className="rounded-xl border bg-card p-6 flex flex-col sm:flex-row gap-6">
+            <Card className="p-6 flex flex-col sm:flex-row gap-6 shadow-sm">
                 <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                     <User className="h-8 w-8 text-primary" />
                 </div>
@@ -84,7 +85,7 @@ export function StudentDetailClient({
                             {student.status}
                         </Badge>
                         {student.faceEnrolled ? (
-                            <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            <Badge className="bg-primary/10 text-primary border-primary/20">
                                 ✓ Face Enrolled
                             </Badge>
                         ) : (
@@ -99,26 +100,26 @@ export function StudentDetailClient({
                         )}
                     </div>
                 </div>
-            </div>
+            </Card>
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 {[
                     { label: "Total Sessions", value: summary.totalSessions, color: "text-foreground" },
-                    { label: "Present", value: summary.present, color: "text-green-600" },
+{ label: "Present", value: summary.present, color: "text-primary" },
                     { label: "Late", value: summary.late, color: "text-yellow-600" },
-                    { label: "Absent", value: summary.absent, color: "text-red-600" },
+                    { label: "Absent", value: summary.absent, color: "text-destructive" },
                     { label: "Excused", value: summary.excused, color: "text-blue-600" },
                 ].map((stat) => (
-                    <div key={stat.label} className="rounded-lg border bg-card p-4 text-center">
+                    <Card key={stat.label} className="p-4 text-center shadow-sm transition-all">
                         <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
                         <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
-                    </div>
+                    </Card>
                 ))}
             </div>
 
             {/* Attendance rate bar */}
-            <div className="rounded-lg border bg-card p-5 space-y-2">
+            <Card className="p-5 space-y-3 shadow-sm">
                 <div className="flex justify-between items-baseline">
                     <div className="flex items-center gap-2">
                         <BookOpen className="h-4 w-4 text-primary" />
@@ -135,13 +136,13 @@ export function StudentDetailClient({
                 <p className="text-xs text-muted-foreground">
                     {summary.present + summary.late} attended of {summary.totalSessions} sessions
                     {summary.attendanceRate < 75 && (
-                        <span className="ml-2 text-red-500 font-medium">⚠ Below 75% threshold</span>
+                        <span className="ml-2 text-destructive font-medium">⚠ Below 75% threshold</span>
                     )}
                 </p>
-            </div>
+            </Card>
 
             {/* Records table */}
-            <div className="rounded-lg border bg-card overflow-hidden">
+            <Card className="overflow-hidden shadow-sm mt-6">
                 <div className="px-5 py-4 border-b">
                     <h2 className="font-semibold">Attendance History ({records.length} records)</h2>
                 </div>
@@ -195,7 +196,7 @@ export function StudentDetailClient({
                         )}
                     </TableBody>
                 </Table>
-            </div>
+            </Card>
         </div>
     );
 }

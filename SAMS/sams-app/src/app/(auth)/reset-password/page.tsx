@@ -65,7 +65,7 @@ function ResetPasswordForm() {
                 </p>
                 <Link
                     href="/forgot-password"
-                    className="text-sm font-medium text-primary underline underline-offset-4 hover:text-primary/80"
+                    className="text-sm font-medium hover:text-primary transition-colors mt-2"
                 >
                     Request a new reset link
                 </Link>
@@ -97,7 +97,7 @@ function ResetPasswordForm() {
 
     return (
         <>
-            <div className="flex flex-col space-y-2 text-center">
+            <div className="flex flex-col space-y-2 text-center pb-2">
                 <h1 className="text-2xl font-semibold tracking-tight">
                     Set new password
                 </h1>
@@ -156,8 +156,8 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
     return (
         <div className="container relative h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-            <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
-                <div className="absolute inset-0 bg-primary/90" />
+            <div className="relative hidden h-full flex-col bg-zinc-900 p-10 text-white dark:border-r lg:flex">
+                <div className="absolute inset-0 bg-zinc-900" />
                 <div className="relative z-20 flex items-center text-lg font-medium">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-6 w-6">
                         <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />

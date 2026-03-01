@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/login-form";
+import { Card } from "@/components/ui/card";
 
 export const dynamic = 'force-dynamic';
 
@@ -20,9 +21,9 @@ export default async function LoginPage({
     const showError = params?.error;
 
     return (
-        <div className="container relative h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-            <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
-                <div className="absolute inset-0 bg-primary/90" />
+        <div className="container relative h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0 bg-background">
+            <div className="relative hidden h-full flex-col bg-zinc-900 p-10 text-white dark:border-r lg:flex">
+                <div className="absolute inset-0 bg-zinc-900" />
                 <div className="relative z-20 flex items-center text-lg font-medium">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -47,21 +48,21 @@ export default async function LoginPage({
                     </blockquote>
                 </div>
             </div>
-            <div className="lg:p-8">
-                <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+            <div className="lg:p-8 flex items-center justify-center">
+                <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-8">
                     {showSetupSuccess && (
-                        <div className="rounded-md bg-green-50 border border-green-200 p-4 text-sm text-green-800">
+                        <div className="rounded-md bg-primary/5 border border-primary/20 p-4 text-sm text-primary">
                             Your account has been set up successfully. Please log in with your email and password.
                         </div>
                     )}
                     {showError && (
-                        <div className="rounded-md bg-red-50 border border-red-200 p-4 text-sm text-red-800">
+                        <div className="rounded-md bg-destructive/5 border border-destructive/20 p-4 text-sm text-destructive">
                             {showError === "unauthorized" 
                                 ? "You do not have permission to access this page."
                                 : "An error occurred. Please try again."}
                         </div>
                     )}
-                    <div className="flex flex-col space-y-2 text-center">
+                    <div className="flex flex-col space-y-2 text-center pb-2">
                         <h1 className="text-2xl font-semibold tracking-tight">
                             Welcome back
                         </h1>
@@ -72,32 +73,32 @@ export default async function LoginPage({
                     <Suspense fallback={<div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">Loading...</div>}>
                         <LoginForm />
                     </Suspense>
-                    <div className="text-center">
+                    <div className="text-center pt-2">
                         <Link
                             href="/forgot-password"
-                            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-primary"
+                            className="text-sm font-medium hover:text-primary transition-colors"
                         >
                             Forgot your password?
                         </Link>
                     </div>
-                    <p className="px-8 text-center text-sm text-muted-foreground">
+                    <p className="px-8 text-center text-sm text-muted-foreground mt-4">
                         By clicking continue, you agree to our{" "}
                         <Link
                             href="/terms"
-                            className="underline underline-offset-4 hover:text-primary"
+                            className="font-medium text-foreground hover:text-primary underline underline-offset-4"
                         >
                             Terms of Service
                         </Link>{" "}
                         and{" "}
                         <Link
                             href="/privacy"
-                            className="underline underline-offset-4 hover:text-primary"
+                            className="font-medium text-foreground hover:text-primary underline underline-offset-4"
                         >
                             Privacy Policy
                         </Link>
                         .
                     </p>
-                </div>
+                </Card>
             </div>
         </div>
     );

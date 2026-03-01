@@ -73,9 +73,9 @@ const StudentRow = memo(function StudentRow({
             <TableCell>
                 <div className="flex items-center gap-1">
                     <ScanFace
-                        className={`h-4 w-4 ${student.faceEnrolled ? "text-green-500" : "text-muted-foreground"}`}
+                        className={`h-4 w-4 ${student.faceEnrolled ? "text-primary" : "text-muted-foreground"}`}
                     />
-                    <span className={`text-sm ${student.faceEnrolled ? "text-green-500" : "text-muted-foreground"}`}>
+                    <span className={`text-sm ${student.faceEnrolled ? "text-primary" : "text-muted-foreground"}`}>
                         {student.faceEnrolled ? "Enrolled" : "Pending"}
                     </span>
                 </div>

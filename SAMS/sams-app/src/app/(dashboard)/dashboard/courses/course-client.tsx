@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -209,7 +210,7 @@ export function CourseClient({ initialCourses, lecturers }: Props) {
                             <Plus className="mr-2 h-4 w-4" /> Add Course
                         </Button>
                     </SheetTrigger>
-                    <SheetContent className="sm:max-w-xl overflow-y-auto">
+                    <SheetContent className="overflow-y-auto overflow-x-hidden">
                         <SheetHeader>
                             <SheetTitle>{editingCourse ? "Edit Course" : "Create Course"}</SheetTitle>
                             <SheetDescription>
@@ -269,31 +270,51 @@ export function CourseClient({ initialCourses, lecturers }: Props) {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4">
-                {[
-                    { label: "Total Courses", value: courses.length, color: "" },
-                    { label: "Active Courses", value: activeCourses, color: "text-green-500" },
-                    { label: "Total Enrollments", value: totalStudents, color: "text-blue-500" },
-                ].map(stat => (
-                    <div key={stat.label} className="rounded-lg border bg-card p-4">
-                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</div>
-                        <div className={`mt-1 text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-                    </div>
-                ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="bg-primary text-primary-foreground transition-all duration-300 relative overflow-hidden group">
+                    <CardHeader className="pb-2 relative z-10">
+                        <CardTitle className="text-xs font-medium uppercase tracking-wider opacity-80">
+                            Total Courses
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                        <div className="text-3xl font-bold">{courses.length}</div>
+                    </CardContent>
+                </Card>
+                <Card className="shadow-sm transition-all duration-300 relative overflow-hidden group">
+                    <CardHeader className="pb-2 relative z-10">
+                        <CardTitle className="text-xs font-medium uppercase tracking-wider opacity-80">
+                            Active Courses
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="relative z-10 text-primary">
+                        <div className="text-3xl font-bold">{activeCourses}</div>
+                    </CardContent>
+                </Card>
+                <Card className="shadow-sm transition-all duration-300 relative overflow-hidden group">
+                    <CardHeader className="pb-2 relative z-10">
+                        <CardTitle className="text-xs font-medium uppercase tracking-wider opacity-80">
+                            Total Enrollments
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="relative z-10 text-blue-600">
+                        <div className="text-3xl font-bold">{totalStudents}</div>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Table */}
-            <div className="rounded-md border bg-card">
+            <Card className="overflow-hidden shadow-sm mt-6">
                 <Table>
                     <TableHeader>
-                        <TableRow>
-                            <TableHead>Code</TableHead>
-                            <TableHead>Course Name</TableHead>
-                            <TableHead>Lecturer</TableHead>
-                            <TableHead className="text-center">Credits</TableHead>
-                            <TableHead className="text-center">Students</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead className="font-semibold">Code</TableHead>
+                            <TableHead className="font-semibold">Course Name</TableHead>
+                            <TableHead className="font-semibold">Lecturer</TableHead>
+                            <TableHead className="font-semibold text-center">Credits</TableHead>
+                            <TableHead className="font-semibold text-center">Students</TableHead>
+                            <TableHead className="font-semibold">Status</TableHead>
+                            <TableHead className="font-semibold text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -308,8 +329,8 @@ export function CourseClient({ initialCourses, lecturers }: Props) {
                             </TableRow>
                         ) : (
                             courses.map(course => (
-                                <TableRow key={course.id}>
-                                    <TableCell className="font-mono font-medium text-sm">{course.code}</TableCell>
+                                <TableRow key={course.id} className="hover:bg-muted/30 transition-colors">
+                                    <TableCell className="font-mono font-medium text-sm text-foreground/80">{course.code}</TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
                                             <span className="font-medium">{course.name}</span>
@@ -318,15 +339,15 @@ export function CourseClient({ initialCourses, lecturers }: Props) {
                                             )}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-sm text-muted-foreground">
+                                    <TableCell className="text-sm text-muted-foreground font-medium">
                                         {course.lecturerName ?? <span className="italic opacity-50">Unassigned</span>}
                                     </TableCell>
-                                    <TableCell className="text-center">{course.creditHours}</TableCell>
-                                    <TableCell className="text-center">{course.studentCount}</TableCell>
+                                    <TableCell className="text-center text-muted-foreground">{course.creditHours}</TableCell>
+                                    <TableCell className="text-center font-medium">{course.studentCount}</TableCell>
                                     <TableCell>
-                                        <Badge className={course.status === "ACTIVE" ? "bg-green-600" : ""}
+                                        <Badge className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${course.status === "ACTIVE" ? "bg-primary/10 text-primary" : ""}`}
                                             variant={course.status === "ACTIVE" ? "default" : "secondary"}>
-                                            {course.status.toLowerCase()}
+                                            {course.status.charAt(0).toUpperCase() + course.status.slice(1).toLowerCase()}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -335,22 +356,20 @@ export function CourseClient({ initialCourses, lecturers }: Props) {
                                                 variant="ghost"
                                                 size="sm"
                                                 asChild
-                                                className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                
                                             >
                                                 <Link href={`/dashboard/courses/${course.id}/enrollment`}>
                                                     <Users2 className="h-3.5 w-3.5 mr-1" />
                                                     Roster
                                                 </Link>
                                             </Button>
-                                            <Button variant="ghost" size="icon" title="Manage Schedule" onClick={() => handleOpenSchedule(course)}>
+                                            <Button variant="ghost" size="icon" title="Manage Schedule" onClick={() => handleOpenSchedule(course)} >
                                                 <CalendarRange className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(course)}>
+                                            <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(course)} >
                                                 <Edit className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon"
-                                                className="text-red-500 hover:text-red-700 hover:bg-red-100"
-                                                onClick={() => handleDelete(course.id, course.name)}>
+                                            <Button variant="ghost" size="icon" onClick={() => handleDelete(course.id, course.name)}>
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
                                         </div>
@@ -360,7 +379,7 @@ export function CourseClient({ initialCourses, lecturers }: Props) {
                         )}
                     </TableBody>
                 </Table>
-            </div>
+            </Card>
 
             {/* Schedule Modal */}
             <Dialog open={!!scheduleCourse} onOpenChange={(open) => { if (!open) setScheduleCourse(null) }}>
@@ -418,7 +437,7 @@ export function CourseClient({ initialCourses, lecturers }: Props) {
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 {s.roomName && <Badge variant="secondary">{s.roomName}</Badge>}
-                                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDeleteSchedule(s.id)} disabled={isScheduleLoading}>
+                                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteSchedule(s.id)} disabled={isScheduleLoading}>
                                                     <X className="h-4 w-4" />
                                                 </Button>
                                             </div>

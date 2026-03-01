@@ -45,8 +45,8 @@ export function SetupAccountForm({ token }: { token: string }) {
 
     return (
         <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-200">Password</Label>
+            <div className="space-y-2 text-left">
+                <Label htmlFor="password">Password</Label>
                 <Input
                     id="password"
                     type="password"
@@ -55,11 +55,11 @@ export function SetupAccountForm({ token }: { token: string }) {
                     required
                     disabled={isLoading}
                     placeholder="Create a strong password"
-                    className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                    className="bg-background border-input text-foreground placeholder:text-muted-foreground"
                 />
             </div>
-            <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-slate-200">Confirm Password</Label>
+            <div className="space-y-2 text-left">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input
                     id="confirmPassword"
                     type="password"
@@ -68,10 +68,10 @@ export function SetupAccountForm({ token }: { token: string }) {
                     required
                     disabled={isLoading}
                     placeholder="Verify your password"
-                    className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                    className="bg-background border-input text-foreground placeholder:text-muted-foreground"
                 />
             </div>
-            <Button className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white" type="submit" disabled={isLoading}>
+            <Button className="w-full mt-6" type="submit" disabled={isLoading}>
                 {isLoading ? "Setting up account..." : "Complete Setup"}
             </Button>
         </form>

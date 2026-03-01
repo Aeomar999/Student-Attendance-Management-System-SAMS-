@@ -115,7 +115,7 @@ export function UserTable({ users }: UserTableProps) {
                                 </Badge>
                             </TableCell>
                             <TableCell>
-                                <span className={user.mfaEnabled ? "text-green-500" : "text-muted-foreground"}>
+                                <span className={user.mfaEnabled ? "text-primary" : "text-muted-foreground"}>
                                     {user.mfaEnabled ? "Enabled" : "Disabled"}
                                 </span>
                             </TableCell>

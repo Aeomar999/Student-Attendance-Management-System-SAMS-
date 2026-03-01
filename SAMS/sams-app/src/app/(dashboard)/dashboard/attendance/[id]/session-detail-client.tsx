@@ -7,6 +7,7 @@ import { ArrowLeft, CheckCircle2, XCircle, Clock, AlertCircle, Download, UserChe
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
@@ -58,21 +59,21 @@ export function SessionDetailClient({ session, records: initialRecords }: Props)
         EXCUSED: records.filter(r => r.status === "EXCUSED").length,
     }
 
-    const statusIcon = (status: string) => {
+const statusIcon = (status: string) => {
         switch (status) {
-            case "PRESENT": return <CheckCircle2 className="h-4 w-4 text-green-600" />
-            case "ABSENT": return <XCircle className="h-4 w-4 text-red-500" />
-            case "LATE": return <Clock className="h-4 w-4 text-amber-500" />
+            case "PRESENT": return <CheckCircle2 className="h-4 w-4 text-primary" />
+            case "ABSENT": return <XCircle className="h-4 w-4 text-destructive" />
+            case "LATE": return <Clock className="h-4 w-4 text-yellow-500" />
             case "EXCUSED": return <AlertCircle className="h-4 w-4 text-blue-500" />
             default: return null
         }
     }
 
-    const statusColor = (status: string) => {
+const statusColor = (status: string) => {
         switch (status) {
-            case "PRESENT": return "bg-green-100 text-green-800 border-green-200"
-            case "ABSENT": return "bg-red-100 text-red-800 border-red-200"
-            case "LATE": return "bg-amber-100 text-amber-800 border-amber-200"
+            case "PRESENT": return "bg-primary/10 text-primary border-primary/20"
+            case "ABSENT": return "bg-destructive/10 text-destructive border-destructive/20"
+            case "LATE": return "bg-yellow-100 text-yellow-800 border-yellow-200"
             case "EXCUSED": return "bg-blue-100 text-blue-800 border-blue-200"
             default: return ""
         }
@@ -143,22 +144,24 @@ export function SessionDetailClient({ session, records: initialRecords }: Props)
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
-                    { label: "Present", count: statusCounts.PRESENT, icon: CheckCircle2, color: "text-green-600 bg-green-50" },
-                    { label: "Absent", count: statusCounts.ABSENT, icon: XCircle, color: "text-red-500 bg-red-50" },
-                    { label: "Late", count: statusCounts.LATE, icon: Clock, color: "text-amber-500 bg-amber-50" },
-                    { label: "Excused", count: statusCounts.EXCUSED, icon: AlertCircle, color: "text-blue-500 bg-blue-50" },
+{ label: "Present", count: statusCounts.PRESENT, icon: CheckCircle2, color: "text-primary", bg: "bg-primary/10" },
+                    { label: "Absent", count: statusCounts.ABSENT, icon: XCircle, color: "text-destructive", bg: "bg-destructive/10" },
+                    { label: "Late", count: statusCounts.LATE, icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" },
+                    { label: "Excused", count: statusCounts.EXCUSED, icon: AlertCircle, color: "text-blue-600", bg: "bg-blue-50" },
                 ].map(item => (
-                    <div key={item.label} className="rounded-lg border bg-card p-4 flex items-center gap-3">
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${item.color}`}>
-                            <item.icon className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <div className="text-2xl font-bold">{item.count}</div>
-                            <div className="text-xs text-muted-foreground uppercase tracking-wider">{item.label}</div>
-                        </div>
-                    </div>
+                    <Card key={item.label} className="shadow-sm transition-all duration-300">
+                        <CardContent className="p-5 flex items-center gap-4">
+                            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${item.bg} ${item.color}`}>
+                                <item.icon className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <div className="text-3xl font-bold">{item.count}</div>
+                                <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider font-semibold">{item.label}</div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 ))}
             </div>
 
@@ -174,16 +177,16 @@ export function SessionDetailClient({ session, records: initialRecords }: Props)
             </div>
 
             {/* Records Table */}
-            <div className="rounded-md border bg-card">
+            <Card className="overflow-hidden shadow-sm">
                 <Table>
                     <TableHeader>
-                        <TableRow>
-                            <TableHead>Student</TableHead>
-                            <TableHead>Student ID</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Confidence</TableHead>
-                            <TableHead>Method</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead className="font-semibold">Student</TableHead>
+                            <TableHead className="font-semibold">Student ID</TableHead>
+                            <TableHead className="font-semibold">Status</TableHead>
+                            <TableHead className="font-semibold">Confidence</TableHead>
+                            <TableHead className="font-semibold">Method</TableHead>
+                            <TableHead className="font-semibold text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -204,9 +207,9 @@ export function SessionDetailClient({ session, records: initialRecords }: Props)
                                 <TableCell className="font-mono text-sm">{record.studentRefId}</TableCell>
                                 <TableCell>
                                     <Badge variant="outline"
-                                        className={`${statusColor(record.status)} flex items-center gap-1 w-fit`}>
+                                        className={`${statusColor(record.status)} flex items-center gap-1.5 w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold`}>
                                         {statusIcon(record.status)}
-                                        {record.status}
+                                        {record.status.charAt(0).toUpperCase() + record.status.slice(1).toLowerCase()}
                                     </Badge>
                                 </TableCell>
                                 <TableCell>
@@ -215,7 +218,7 @@ export function SessionDetailClient({ session, records: initialRecords }: Props)
                                         : <span className="text-muted-foreground">—</span>}
                                 </TableCell>
                                 <TableCell>
-                                    <span className={`text-xs ${record.isManual ? "text-amber-600" : "text-green-600"}`}>
+                                    <span className={`text-xs ${record.isManual ? "text-yellow-600" : "text-primary"}`}>
                                         {record.isManual ? "Manual" : "FR"}
                                     </span>
                                 </TableCell>
@@ -228,7 +231,7 @@ export function SessionDetailClient({ session, records: initialRecords }: Props)
                                         )}
                                         disabled={updatingId === record.studentId}
                                     >
-                                        <SelectTrigger className="w-[110px] h-8 text-xs">
+                                        <SelectTrigger className="w-[110px] h-8 text-xs rounded-full">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -243,7 +246,7 @@ export function SessionDetailClient({ session, records: initialRecords }: Props)
                         ))}
                     </TableBody>
                 </Table>
-            </div>
+            </Card>
         </div>
     )
 }

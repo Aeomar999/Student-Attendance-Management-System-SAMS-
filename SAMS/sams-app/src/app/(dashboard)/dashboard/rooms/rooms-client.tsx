@@ -122,7 +122,7 @@ export function RoomsClient({ rooms: initialRooms, institutionId }: Props) {
                     <SheetTrigger asChild>
                         <Button><Plus className="mr-2 h-4 w-4" /> Add Room</Button>
                     </SheetTrigger>
-                    <SheetContent className="sm:max-w-md">
+                    <SheetContent>
                         <SheetHeader>
                             <SheetTitle>{editingRoom ? "Edit Room" : "Add Room"}</SheetTitle>
                             <SheetDescription>
@@ -223,7 +223,7 @@ export function RoomsClient({ rooms: initialRooms, institutionId }: Props) {
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onClick={() => setDeleteDialog({ open: true, room })}
-                                                className="text-red-600 focus:text-red-600"
+                                                className="text-destructive focus:text-destructive"
                                             >
                                                 <Trash2 className="mr-2 h-4 w-4" /> Delete
                                             </DropdownMenuItem>

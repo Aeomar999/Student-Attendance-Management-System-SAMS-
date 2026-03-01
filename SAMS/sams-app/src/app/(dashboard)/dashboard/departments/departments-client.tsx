@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Card } from "@/components/ui/card"
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
@@ -123,7 +124,7 @@ export function DepartmentClient({ departments: initialDepartments, institutionI
                     <SheetTrigger asChild>
                         <Button><Plus className="mr-2 h-4 w-4" /> Add Department</Button>
                     </SheetTrigger>
-                    <SheetContent className="sm:max-w-md">
+                    <SheetContent>
                         <SheetHeader>
                             <SheetTitle>{editingDept ? "Edit Department" : "Add Department"}</SheetTitle>
                             <SheetDescription>
@@ -172,7 +173,7 @@ export function DepartmentClient({ departments: initialDepartments, institutionI
                 </Sheet>
             </div>
 
-            <div className="rounded-md border bg-card">
+            <Card className="rounded-md border bg-card">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -216,7 +217,7 @@ export function DepartmentClient({ departments: initialDepartments, institutionI
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onClick={() => setDeleteDialog({ open: true, dept })}
-                                                className="text-red-600 focus:text-red-600"
+                                                className="text-destructive focus:text-destructive"
                                             >
                                                 <Trash2 className="mr-2 h-4 w-4" /> Delete
                                             </DropdownMenuItem>
@@ -227,7 +228,7 @@ export function DepartmentClient({ departments: initialDepartments, institutionI
                         ))}
                     </TableBody>
                 </Table>
-            </div>
+            </Card>
 
             <Dialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open, dept: null })}>
                 <DialogContent>

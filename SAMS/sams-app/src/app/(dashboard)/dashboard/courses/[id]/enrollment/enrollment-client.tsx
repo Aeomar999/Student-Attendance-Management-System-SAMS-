@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
@@ -134,7 +136,7 @@ export function EnrollmentClient({
             </div>
 
             {/* Enrolled table */}
-            <div className="rounded-lg border bg-card overflow-hidden">
+            <Card className="rounded-lg border bg-card overflow-hidden">
                 <div className="px-4 py-3 border-b flex items-center gap-3">
                     <Search className="h-4 w-4 text-muted-foreground shrink-0" />
                     <Input
@@ -184,14 +186,14 @@ export function EnrollmentClient({
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {student.faceEnrolled
-                                                ? <CheckCircle2 className="h-4 w-4 text-green-500" />
+{student.faceEnrolled
+                                                ? <CheckCircle2 className="h-4 w-4 text-primary" />
                                                 : <XCircle className="h-4 w-4 text-gray-400" />
                                             }
                                         </TableCell>
                                         <TableCell>
                                             {rate !== null
-                                                ? <span className={`text-sm font-medium ${rate < 75 ? "text-red-500" : "text-green-600"}`}>{rate}%</span>
+                                                ? <span className={`text-sm font-medium ${rate < 75 ? "text-destructive" : "text-primary"}`}>{rate}%</span>
                                                 : <span className="text-muted-foreground text-sm">—</span>
                                             }
                                         </TableCell>
@@ -216,7 +218,7 @@ export function EnrollmentClient({
                         )}
                     </TableBody>
                 </Table>
-            </div>
+            </Card>
 
             {/* Add Students Dialog */}
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -240,9 +242,9 @@ export function EnrollmentClient({
                             </p>
                         ) : (
                             filteredAvailable.map(student => (
-                                <label
+                                <Label
                                     key={student.id}
-                                    className="flex items-center gap-3 rounded-lg p-3 hover:bg-muted/50 cursor-pointer"
+                                    className="flex items-center gap-3 rounded-lg p-3 hover:bg-muted/50 cursor-pointer font-normal border border-transparent hover:border-border"
                                 >
                                     <Checkbox
                                         checked={selectedIds.includes(student.id)}
@@ -253,9 +255,9 @@ export function EnrollmentClient({
                                         <p className="text-xs text-muted-foreground truncate">{student.email} · {student.studentRefId}</p>
                                     </div>
                                     {student.faceEnrolled && (
-                                        <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                                     )}
-                                </label>
+                                </Label>
                             ))
                         )}
                     </div>

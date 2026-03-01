@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
     createUser, updateUser, deleteUser, suspendUser, activateUser, adminSendPasswordReset
 } from "@/app/actions/user";
@@ -184,7 +185,7 @@ export function UserClient({
     };
 
     const getStatusBadge = (s: string) => {
-        if (s === "ACTIVE") return <Badge variant="default" className="bg-green-600">Active</Badge>;
+        if (s === "ACTIVE") return <Badge variant="default" className="bg-primary">Active</Badge>;
         if (s === "SUSPENDED") return <Badge variant="destructive">Suspended</Badge>;
         return <Badge variant="secondary">Inactive</Badge>;
     };
@@ -204,11 +205,11 @@ export function UserClient({
                     if (!open) resetForm();
                 }}>
                     <SheetTrigger asChild>
-                        <Button onClick={handleOpenNew}>
+                        <Button onClick={handleOpenNew} >
                             <Plus className="mr-2 h-4 w-4" /> Add User
                         </Button>
                     </SheetTrigger>
-                    <SheetContent className="sm:max-w-md">
+                    <SheetContent>
                         <SheetHeader>
                             <SheetTitle>{editingUser ? "Edit User" : "Add New User"}</SheetTitle>
                             <SheetDescription>
@@ -252,17 +253,16 @@ export function UserClient({
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="role">Role</Label>
-                                <select
-                                    id="role"
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    value={role}
-                                    onChange={(e) => setRole(e.target.value as "SUPER_ADMIN" | "ADMIN" | "LECTURER")}
-                                    disabled={isLoading}
-                                >
-                                    <option value="LECTURER">Lecturer</option>
-                                    <option value="ADMIN">Admin</option>
-                                    <option value="SUPER_ADMIN">Super Admin</option>
-                                </select>
+                                <Select value={role} onValueChange={(val) => setRole(val as "SUPER_ADMIN" | "ADMIN" | "LECTURER")} disabled={isLoading}>
+                                    <SelectTrigger id="role" className="w-full h-10">
+                                        <SelectValue placeholder="Select a role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="LECTURER">Lecturer</SelectItem>
+                                        <SelectItem value="ADMIN">Admin</SelectItem>
+                                        <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div className="pt-4 flex justify-end">
@@ -275,7 +275,7 @@ export function UserClient({
                 </Sheet>
             </div>
 
-            <div className="rounded-md border bg-card">
+            <div className="overflow-hidden shadow-sm mt-6">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -329,7 +329,7 @@ export function UserClient({
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => handleActivate(user.id)}
-                                                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                    className="text-primary hover:text-primary hover:bg-primary/10"
                                                     title="Activate user"
                                                     disabled={user.id === currentUserId}
                                                 >
@@ -350,7 +350,7 @@ export function UserClient({
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
                                                 onClick={() => handleDelete(user.id)}
                                                 disabled={user.id === currentUserId || isLoading}
                                                 title="Delete user"

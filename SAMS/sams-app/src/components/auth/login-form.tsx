@@ -76,7 +76,7 @@ export function LoginForm() {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                 {setupSuccess && (
                     <div className="rounded-md bg-green-50 p-4 border border-green-200">
                         <div className="flex">
