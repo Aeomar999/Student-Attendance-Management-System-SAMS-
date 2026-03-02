@@ -337,7 +337,7 @@ export default async function DashboardPage() {
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                 {/* Recent Activity */}
-                <Card className="text-card-foreground shadow-sm col-span-4 flex flex-col">
+                <Card className="text-card-foreground shadow-sm col-span-1 md:col-span-2 lg:col-span-4 flex flex-col">
                     <CardHeader className="p-6 border-b border-border/50">
                         <div className="flex items-center justify-between">
                             <CardTitle className="tracking-tight text-lg font-semibold">Recent Activity</CardTitle>
@@ -385,7 +385,7 @@ export default async function DashboardPage() {
                 </Card>
 
                 {/* Upcoming Sessions */}
-                <Card className="text-card-foreground shadow-sm col-span-3 flex flex-col">
+                <Card className="text-card-foreground shadow-sm col-span-1 md:col-span-2 lg:col-span-3 flex flex-col">
                     <CardHeader className="p-6 border-b border-border/50">
                         <div className="flex items-center justify-between">
                             <CardTitle className="tracking-tight text-lg font-semibold">Upcoming Sessions</CardTitle>

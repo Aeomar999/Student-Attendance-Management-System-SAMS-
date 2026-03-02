@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { UserPlus, Edit, Trash2, ScanFace, Camera, Loader2, Upload, HelpCircle, FileText, Download } from "lucide-react";
+import { UserPlus, ScanFace, Camera, Loader2, Upload, HelpCircle, FileText, Download } from "lucide-react";
 import { toast } from "sonner";
 import Webcam from "react-webcam";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -15,6 +14,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { StudentTable } from "@/components/students/student-table";
 import {
     Sheet,
     SheetContent,
@@ -33,11 +33,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import {
     createStudent,
-    updateStudent,
-    deleteStudent
+    updateStudent
 } from "@/app/actions/student";
 import { importStudentsCSV } from "@/app/actions/student-import";
 
@@ -61,7 +59,7 @@ export function StudentClient({
 }: { 
     initialStudents: StudentType[];
 }) {
-    const [students, setStudents] = useState<StudentType[]>(initialStudents);
+    const [students] = useState<StudentType[]>(initialStudents);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState<StudentType | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -185,30 +183,11 @@ export function StudentClient({
         }
     };
 
-    const handleDelete = async (id: string, name: string) => {
-        if (!confirm(`Are you sure you want to delete ${name}?`)) return;
-
-        setIsLoading(true);
-        try {
-            const result = await deleteStudent(id);
-            if (result.success) {
-                toast.success("Student deleted successfully");
-                setStudents(students.filter(s => s.id !== id));
-            } else {
-                toast.error(result.error || "Failed to delete student");
-            }
-        } catch {
-            toast.error("An unexpected error occurred");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     const enrolledCount = students.filter(s => s.faceEnrolled).length;
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                         <ScanFace className="h-5 w-5 text-primary" />
@@ -220,7 +199,7 @@ export function StudentClient({
                         </p>
                     </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <Dialog>
                         <DialogTrigger asChild>
                             <Button variant="outline" >
@@ -293,8 +272,8 @@ export function StudentClient({
                                     </div>
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold mb-2">Sample CSV Data:</h4>
-                                    <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto border">
+                                    <h4 className="font-semibold mb-2 text-sm text-foreground/80">Sample CSV Data:</h4>
+                                    <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto border text-muted-foreground">
 {`studentId,firstName,lastName,email,program,yearOfStudy
 STU001,John,Doe,john.doe@example.com,Computer Science,1
 STU002,Jane,Smith,jane.smith@example.com,Engineering,2
@@ -384,33 +363,33 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="firstName">First Name</Label>
-                                    <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={isLoading} />
+                                    <Input id="firstName" placeholder="e.g. John" aria-label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={isLoading} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="lastName">Last Name</Label>
-                                    <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={isLoading} />
+                                    <Input id="lastName" placeholder="e.g. Doe" aria-label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={isLoading} />
                                 </div>
                             </div>
                             
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="studentId">Student ID</Label>
-                                    <Input id="studentId" value={studentId} onChange={(e) => setStudentId(e.target.value)} required disabled={isLoading || !!editingStudent} />
+                                    <Input id="studentId" placeholder="e.g. STU123456" aria-label="Student ID" value={studentId} onChange={(e) => setStudentId(e.target.value)} required disabled={isLoading || !!editingStudent} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="email">Email</Label>
-                                    <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading || !!editingStudent} />
+                                    <Input id="email" type="email" placeholder="e.g. john.doe@example.com" aria-label="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading || !!editingStudent} />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="program">Program / Major</Label>
-                                    <Input id="program" value={program} onChange={(e) => setProgram(e.target.value)} required disabled={isLoading} />
+                                    <Input id="program" placeholder="e.g. Computer Science" aria-label="Program or Major" value={program} onChange={(e) => setProgram(e.target.value)} required disabled={isLoading} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="yearOfStudy">Year of Study</Label>
-                                    <Input id="yearOfStudy" type="number" min={1} max={6} value={yearOfStudy} onChange={(e) => setYearOfStudy(parseInt(e.target.value))} required disabled={isLoading} />
+                                    <Input id="yearOfStudy" type="number" min={1} max={6} placeholder="e.g. 1" aria-label="Year of Study" value={yearOfStudy} onChange={(e) => setYearOfStudy(parseInt(e.target.value))} required disabled={isLoading} />
                                 </div>
                             </div>
 
@@ -456,10 +435,10 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                                             </div>
                                         </div>
                                     ) : (
-                                        <Button type="button" variant="secondary" className="w-full h-24 border-dashed border-2" onClick={() => setIsCapturing(true)}>
+                                        <Button type="button" variant="secondary" aria-label="Click to capture face enrollment data" className="w-full h-24 border-dashed border-2 hover:bg-muted/50 transition-colors" onClick={() => setIsCapturing(true)}>
                                             <div className="flex flex-col items-center gap-2">
-                                                <Camera className="h-6 w-6" />
-                                                <span>Click to capture face enrollment data</span>
+                                                <Camera className="h-6 w-6 text-muted-foreground" />
+                                                <span className="text-sm font-medium text-muted-foreground">Click to capture face enrollment data</span>
                                             </div>
                                         </Button>
                                     )}
@@ -516,82 +495,14 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                 </Card>
             </div>
 
-            <Card className="overflow-hidden shadow-sm">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="hover:bg-transparent">
-                            <TableHead className="font-semibold">Student ID</TableHead>
-                            <TableHead className="font-semibold">Name / Email</TableHead>
-                            <TableHead className="font-semibold">Program (Year)</TableHead>
-                            <TableHead className="font-semibold">Face Enrolled</TableHead>
-                            <TableHead className="font-semibold">Status</TableHead>
-                            <TableHead className="font-semibold text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {students.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                    No students found. Add a student to get started.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            students.map((student) => (
-                                <TableRow key={student.id} className="hover:bg-muted/30 transition-colors">
-                                    <TableCell className="font-mono text-sm font-medium text-foreground/80">{student.studentId}</TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col">
-                                            <Link
-                                                href={`/dashboard/students/${student.id}`}
-                                                className="font-medium hover:underline text-primary"
-                                            >
-                                                {student.firstName} {student.lastName}
-                                            </Link>
-                                            <span className="text-sm text-muted-foreground">{student.email}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="font-medium">{student.program}</span> <span className="text-muted-foreground">(Yr {student.yearOfStudy})</span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-<ScanFace className={`h-4 w-4 ${student.faceEnrolled ? "text-primary" : "text-yellow-500"}`} />
-                                            <span className={`text-sm font-medium ${student.faceEnrolled ? "text-primary" : "text-yellow-600"}`}>
-                                                {student.faceEnrolled ? "Yes" : "Pending"}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={student.status === "ACTIVE" ? "default" : "secondary"} className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${student.status === "ACTIVE" ? "bg-primary/10 text-primary" : ""}`}>
-                                            {student.status.charAt(0).toUpperCase() + student.status.slice(1).toLowerCase()}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
-                                                
-                                                onClick={() => handleOpenEdit(student)}
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
-                                                className="rounded-full text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                onClick={() => handleDelete(student.id, `${student.firstName} ${student.lastName}`)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </Card>
+            <div className="mt-8">
+                {/* eslint-disable @typescript-eslint/no-explicit-any */}
+                <StudentTable 
+                    students={students as any} 
+                    onEdit={(student) => handleOpenEdit(student as any)} 
+                />
+                {/* eslint-enable @typescript-eslint/no-explicit-any */}
+            </div>
         </div>
     );
 }

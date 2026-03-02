@@ -25,7 +25,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { MoreHorizontal, Trash2, ScanFace, ChevronLeft, ChevronRight, Search, ArrowUpDown, Plus } from "lucide-react";
+import { MoreHorizontal, Trash2, ScanFace, ChevronLeft, ChevronRight, Search, ArrowUpDown, Plus, Edit } from "lucide-react";
 import { deleteStudent } from "@/actions/students";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -45,6 +45,7 @@ interface Student {
 
 interface StudentTableProps {
     students: Student[];
+    onEdit?: (student: Student) => void;
 }
 
 type SortField = "studentId" | "firstName" | "lastName" | "email" | "program" | "yearOfStudy" | "status" | "faceEnrolled";
@@ -54,10 +55,12 @@ const PAGE_SIZE = 20;
 
 const StudentRow = memo(function StudentRow({ 
     student, 
+    onEdit,
     onDelete,
     isPending 
 }: { 
     student: Student; 
+    onEdit?: (student: Student) => void;
     onDelete: (id: string, name: string) => void;
     isPending: boolean;
 }) {
@@ -94,6 +97,12 @@ const StudentRow = memo(function StudentRow({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                        {onEdit && (
+                            <DropdownMenuItem onClick={() => onEdit(student)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                            </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem
                             className="text-destructive focus:text-destructive"
                             onClick={() => onDelete(student.id, `${student.firstName} ${student.lastName}`)}
@@ -108,7 +117,7 @@ const StudentRow = memo(function StudentRow({
     );
 });
 
-export function StudentTable({ students }: StudentTableProps) {
+export function StudentTable({ students, onEdit }: StudentTableProps) {
     const [isPending, startTransition] = useTransition();
     const [page, setPage] = useState(0);
     const [searchTerm, setSearchTerm] = useState("");
@@ -227,6 +236,7 @@ export function StudentTable({ students }: StudentTableProps) {
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input 
                             placeholder="Search students..." 
+                            aria-label="Search students by name, ID, or email"
                             className="pl-10"
                             value={searchTerm}
                             onChange={(e) => {
@@ -236,7 +246,7 @@ export function StudentTable({ students }: StudentTableProps) {
                         />
                     </div>
                     <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0); }}>
-                        <SelectTrigger className="w-full sm:w-40">
+                        <SelectTrigger className="w-full sm:w-40" aria-label="Filter by Status">
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -246,7 +256,7 @@ export function StudentTable({ students }: StudentTableProps) {
                         </SelectContent>
                     </Select>
                     <Select value={faceFilter} onValueChange={(v) => { setFaceFilter(v); setPage(0); }}>
-                        <SelectTrigger className="w-full sm:w-40">
+                        <SelectTrigger className="w-full sm:w-40" aria-label="Filter by Face Enrollment Status">
                             <SelectValue placeholder="Face Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -272,7 +282,7 @@ export function StudentTable({ students }: StudentTableProps) {
             </div>
             
             {/* Table */}
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow className="hover:bg-transparent">
@@ -348,6 +358,7 @@ export function StudentTable({ students }: StudentTableProps) {
                                 <StudentRow 
                                     key={student.id} 
                                     student={student} 
+                                    onEdit={onEdit}
                                     onDelete={handleDelete}
                                     isPending={isPending}
                                 />
@@ -364,12 +375,13 @@ export function StudentTable({ students }: StudentTableProps) {
                         Showing {page * PAGE_SIZE + 1} to {Math.min((page + 1) * PAGE_SIZE, filteredStudents.length)} of {filteredStudents.length} students
                         {hasFilters && ` (${students.length} total)`}
                     </div>
-                    <div className="flex items-center gap-2 order-1 sm:order-2">
+                    <nav aria-label="Pagination Navigation" className="flex items-center gap-2 order-1 sm:order-2">
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handlePageChange(page - 1)}
                             disabled={page === 0}
+                            aria-label="Previous Page"
                         >
                             <ChevronLeft className="h-4 w-4" />
                             Previous
@@ -389,6 +401,8 @@ export function StudentTable({ students }: StudentTableProps) {
                                         size="sm"
                                         className="w-8 h-8 p-0"
                                         onClick={() => handlePageChange(pageNum)}
+                                        aria-label={`Page ${pageNum + 1}`}
+                                        aria-current={page === pageNum ? "page" : undefined}
                                     >
                                         {pageNum + 1}
                                     </Button>
@@ -399,12 +413,13 @@ export function StudentTable({ students }: StudentTableProps) {
                             variant="outline"
                             size="sm"
                             onClick={() => handlePageChange(page + 1)}
-                            disabled={page >= totalPages - 1}
+                            disabled={page === totalPages - 1}
+                            aria-label="Next Page"
                         >
                             Next
                             <ChevronRight className="h-4 w-4" />
                         </Button>
-                    </div>
+                    </nav>
                 </div>
             )}
         </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
+import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +22,15 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from 
 
 export function Header() {
     const { data: session } = useSession();
+    const pathname = usePathname();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [prevPathname, setPrevPathname] = useState(pathname);
+
+    // Close the mobile menu whenever the pathname changes, without using useEffect
+    if (pathname !== prevPathname) {
+        setPrevPathname(pathname);
+        setIsMobileMenuOpen(false);
+    }
 
     // Create a placeholder avatar fallback from the email
     const getInitials = (email?: string | null) => {
@@ -32,7 +43,7 @@ export function Header() {
     return (
         <header className="flex h-14 items-center justify-between border-b border-border px-4 md:px-6 bg-background text-foreground sticky top-0 z-10">
             <div className="flex items-center flex-1 gap-4">
-                <Sheet>
+                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                     <SheetTrigger asChild>
                         <Button variant="ghost" size="icon" className="md:hidden">
                             <Menu className="h-5 w-5" />

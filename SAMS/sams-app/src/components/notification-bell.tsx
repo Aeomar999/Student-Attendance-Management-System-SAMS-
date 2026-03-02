@@ -157,7 +157,7 @@ export function NotificationBell() {
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
 
-                    <div className="absolute right-0 top-full mt-2 z-50 w-80 sm:w-96 max-h-[85vh] overflow-y-auto rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                    <div className="absolute right-[calc(-50vw+1.5rem)] sm:right-0 top-full mt-2 z-50 w-[calc(100vw-2rem)] sm:w-96 max-h-[85vh] overflow-y-auto rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                         <div className="sticky top-0 flex flex-col gap-3 border-b border-border/50 bg-card/95 backdrop-blur-xl p-4 z-10">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-base font-semibold tracking-tight text-foreground">Notifications</h3>

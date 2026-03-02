@@ -21,7 +21,7 @@ export default async function LoginPage({
     const showError = params?.error;
 
     return (
-        <div className="container relative h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0 bg-background">
+        <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 px-4 lg:px-0 bg-background py-8 lg:py-0">
             <div className="relative hidden h-full flex-col bg-zinc-900 p-10 text-white dark:border-r lg:flex">
                 <div className="absolute inset-0 bg-zinc-900" />
                 <div className="relative z-20 flex items-center text-lg font-medium">
@@ -48,8 +48,8 @@ export default async function LoginPage({
                     </blockquote>
                 </div>
             </div>
-            <div className="lg:p-8 flex items-center justify-center">
-                <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-8">
+            <div className="lg:p-8 flex items-center justify-center w-full">
+                <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 sm:p-8">
                     {showSetupSuccess && (
                         <div className="rounded-md bg-primary/5 border border-primary/20 p-4 text-sm text-primary">
                             Your account has been set up successfully. Please log in with your email and password.
