@@ -15,7 +15,9 @@ async function withRawClient<T>(fn: (client: Client) => Promise<T>): Promise<T> 
         ssl: { rejectUnauthorized: false },
     });
     try {
+        console.log("[SAMS Auth] Connecting to DB...");
         await client.connect();
+        console.log("[SAMS Auth] DB Connected!");
         return await fn(client);
     } finally {
         await client.end();
@@ -51,10 +53,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             async authorize(credentials: any) {
+                console.log("[SAMS Auth] authorize called with emails:", credentials?.email);
                 try {
                     if (!credentials?.email || !credentials?.password) return null;
 
+                    console.log("[SAMS Auth] Looking up user...");
                     const user = await lookupUser(credentials.email as string);
+                    console.log("[SAMS Auth] Lookup user result:", user ? "found" : "not found");
                     if (!user?.password_hash) return null;
 
                     // Block suspended accounts

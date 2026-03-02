@@ -62,7 +62,6 @@ export function LoginForm() {
             // Using setTimeout to allow the toast to render before navigating
             setTimeout(() => {
                 router.push(callbackUrl);
-                router.refresh();
             }, 500);
 
         } catch {
