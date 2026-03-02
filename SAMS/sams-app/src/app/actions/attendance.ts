@@ -133,8 +133,8 @@ export async function createAttendanceSession(data: z.infer<typeof sessionSchema
             const startDt = new Date(`${v.sessionDate}T${v.startTime}`)
             const result = await db.query(`
                 INSERT INTO attendance_sessions
-                (course_id, lecturer_id, session_date, start_time, end_time, status, grace_period, total_present, total_absent)
-                VALUES ($1, $2, $3, $4, $5, 'ACTIVE', $6, 0, 0)
+                (course_id, lecturer_id, session_date, start_time, end_time, status, grace_period, total_present, total_absent, updated_at)
+                VALUES ($1, $2, $3, $4, $5, 'ACTIVE', $6, 0, 0, NOW())
                 RETURNING id, status
             `, [v.courseId, authSession.user.id, v.sessionDate, startDt.toISOString(), null, v.gracePeriod])
             return result.rows[0]
@@ -214,8 +214,8 @@ export async function markAttendance(
     try {
         await withDb(async (db) => {
             await db.query(`
-                INSERT INTO attendance_records (session_id, student_id, status, is_manual, manual_reason, recognized_at)
-                VALUES ($1, $2, $3, true, $4, $5)
+                INSERT INTO attendance_records (session_id, student_id, status, is_manual, manual_reason, recognized_at, updated_at)
+                VALUES ($1, $2, $3, true, $4, $5, NOW())
                 ON CONFLICT (session_id, student_id)
                 DO UPDATE SET status=$3, is_manual=true, manual_reason=$4,
                 recognized_at=$5, updated_at=NOW()

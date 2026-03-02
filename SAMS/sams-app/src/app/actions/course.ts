@@ -111,21 +111,32 @@ export async function createCourse(data: z.infer<typeof courseSchema>) {
     await requireAdmin()
     try {
         const v = courseSchema.parse(data)
+
         const row = await withDb(async (db) => {
             const existing = await db.query("SELECT id FROM courses WHERE code=$1", [v.code])
-            if (existing.rows.length > 0) return null
+            if (existing.rows.length > 0) return { error: "exists" }
+
             const result = await db.query(`
-                INSERT INTO courses (code, name, description, department_id, institution_id, lecturer_id, credit_hours, status)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,'ACTIVE')
+                INSERT INTO courses (code, name, description, department_id, institution_id, lecturer_id, credit_hours, status, updated_at)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,'ACTIVE',NOW())
                 RETURNING id, code, name, status
             `, [v.code, v.name, v.description ?? null, v.departmentId, v.institutionId, v.lecturerId ?? null, v.creditHours])
+
+            if (!result.rows[0]) return { error: "no rows returned" }
             return result.rows[0]
         })
-        if (!row) return { success: false, error: "Course code already exists" }
+
+        if (!row || "error" in row) {
+            if (row?.error === "exists") return { success: false, error: "Course code already exists" }
+            return { success: false, error: "Failed to create course" }
+        }
+
         revalidatePath("/dashboard/courses")
         return { success: true, data: row }
     } catch (error) {
-        if (error instanceof z.ZodError) return { success: false, error: error.issues[0]?.message || "Validation failed" }
+        if (error instanceof z.ZodError) {
+            return { success: false, error: error.issues[0]?.message || "Validation failed" }
+        }
         console.error("Failed to create course:", error)
         return { success: false, error: "Failed to create course" }
     }
@@ -184,6 +195,39 @@ export async function getLecturers() {
     }
 }
 
+export async function getInstitutions() {
+    await requireAuth()
+    try {
+        const rows = await withDb(async (db) => {
+            const result = await db.query(
+                `SELECT id, name, code FROM institutions WHERE status='ACTIVE' ORDER BY name`
+            )
+            return result.rows
+        })
+        return { success: true, data: rows }
+    } catch (error) {
+        console.error("Failed to fetch institutions:", error)
+        return { success: false, error: "Failed to fetch institutions" }
+    }
+}
+
+export async function getDepartmentsByInstitution(institutionId: string) {
+    await requireAuth()
+    try {
+        const rows = await withDb(async (db) => {
+            const result = await db.query(
+                `SELECT id, name, code FROM departments WHERE institution_id=$1 ORDER BY name`,
+                [institutionId]
+            )
+            return result.rows
+        })
+        return { success: true, data: rows }
+    } catch (error) {
+        console.error("Failed to fetch departments:", error)
+        return { success: false, error: "Failed to fetch departments" }
+    }
+}
+
 // ── Course Schedules ──────────────────────────────────────────────────────────
 
 export async function getCourseSchedules(courseId: string) {
@@ -191,10 +235,12 @@ export async function getCourseSchedules(courseId: string) {
     try {
         const rows = await withDb(async (db) => {
             const result = await db.query(
-                `SELECT id, course_id AS "courseId", day_of_week AS "dayOfWeek",
-                start_time AS "startTime", end_time AS "endTime", room_name AS "roomName"
-                FROM course_schedules WHERE course_id=$1
-                ORDER BY CASE day_of_week WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2
+                `SELECT s.id, s.course_id AS "courseId", s.day_of_week AS "dayOfWeek",
+                s.start_time AS "startTime", s.end_time AS "endTime", r.name AS "roomName"
+                FROM schedules s
+                LEFT JOIN rooms r ON s.room_id = r.id
+                WHERE s.course_id=$1
+                ORDER BY CASE s.day_of_week WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2
                 WHEN 'Wednesday' THEN 3 WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5
                 WHEN 'Saturday' THEN 6 ELSE 7 END`,
                 [courseId]
@@ -213,14 +259,19 @@ export async function addCourseSchedule(courseId: string, data: z.infer<typeof s
     try {
         const v = scheduleSchema.parse(data)
         const row = await withDb(async (db) => {
+            let roomId = null;
+            if (v.roomName) {
+                const roomRes = await db.query("SELECT id FROM rooms WHERE name = $1 LIMIT 1", [v.roomName]);
+                if (roomRes.rows.length > 0) roomId = roomRes.rows[0].id;
+            }
             const result = await db.query(
-                `INSERT INTO course_schedules (course_id, day_of_week, start_time, end_time, room_name)
-                VALUES ($1,$2,$3,$4,$5)
+                `INSERT INTO schedules (course_id, day_of_week, start_time, end_time, room_id, updated_at)
+                VALUES ($1,$2,$3,$4,$5,NOW())
                 RETURNING id, course_id AS "courseId", day_of_week AS "dayOfWeek",
-                start_time AS "startTime", end_time AS "endTime", room_name AS "roomName"`,
-                [courseId, v.dayOfWeek, v.startTime, v.endTime, v.roomName ?? null]
+                start_time AS "startTime", end_time AS "endTime"`,
+                [courseId, v.dayOfWeek, v.startTime, v.endTime, roomId]
             )
-            return result.rows[0]
+            return { ...result.rows[0], roomName: v.roomName };
         })
         revalidatePath("/dashboard/courses")
         revalidatePath("/dashboard/schedule")
@@ -235,7 +286,7 @@ export async function addCourseSchedule(courseId: string, data: z.infer<typeof s
 export async function deleteCourseSchedule(scheduleId: string) {
     await requireAdmin()
     try {
-        await withDb(db => db.query("DELETE FROM course_schedules WHERE id=$1", [scheduleId]))
+        await withDb(db => db.query("DELETE FROM schedules WHERE id=$1", [scheduleId]))
         revalidatePath("/dashboard/courses")
         revalidatePath("/dashboard/schedule")
         return { success: true }
@@ -267,7 +318,7 @@ export async function getCourseStudents(courseId: string) {
                 JOIN students s ON ce.student_id = s.id
                 LEFT JOIN attendance_sessions asess ON asess.course_id::text = ce.course_id::text
                 LEFT JOIN attendance_records ar ON ar.session_id = asess.id AND ar.student_id = s.id
-                WHERE ce.course_id = $1::uuid
+                WHERE ce.course_id::text = $1::text
                 GROUP BY s.id, ce.enrolled_at
                 ORDER BY s.last_name, s.first_name
             `, [courseId])
@@ -290,7 +341,7 @@ export async function getStudentsNotInCourse(courseId: string) {
                 FROM students s
                 WHERE s.status='ACTIVE'
                 AND s.id NOT IN (
-                    SELECT student_id FROM student_courses WHERE course_id=$1::uuid
+                    SELECT student_id FROM student_courses WHERE course_id::text = $1::text
                 )
                 ORDER BY s.last_name, s.first_name
             `, [courseId])
@@ -311,14 +362,14 @@ export async function enrollStudentsInCourse(courseId: string, studentIds: strin
         await withDb(async (db) => {
             for (const studentId of studentIds) {
                 const check = await db.query(
-                    "SELECT id FROM student_courses WHERE course_id=$1::uuid AND student_id=$2",
+                    "SELECT id FROM student_courses WHERE course_id::text = $1::text AND student_id = $2",
                     [courseId, studentId]
                 )
                 if (check.rows.length > 0) {
                     alreadyEnrolled++
                 } else {
                     await db.query(
-                        "INSERT INTO student_courses (course_id, student_id) VALUES ($1::uuid, $2)",
+                        "INSERT INTO student_courses (course_id, student_id) VALUES ($1, $2)",
                         [courseId, studentId]
                     )
                     enrolled++
@@ -338,7 +389,7 @@ export async function unenrollStudentFromCourse(courseId: string, studentId: str
     await requireAdmin()
     try {
         await withDb(db => db.query(
-            "DELETE FROM student_courses WHERE course_id=$1::uuid AND student_id=$2",
+            "DELETE FROM student_courses WHERE course_id::text = $1::text AND student_id = $2",
             [courseId, studentId]
         ))
         revalidatePath(`/dashboard/courses/${courseId}/enrollment`)

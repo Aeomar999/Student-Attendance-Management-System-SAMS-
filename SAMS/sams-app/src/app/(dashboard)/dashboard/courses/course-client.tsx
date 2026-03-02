@@ -29,12 +29,20 @@ type LecturerRow = {
     email: string
 }
 
+type DepartmentRow = {
+    id: string
+    name: string
+    code: string
+}
+
 type Props = {
     initialCourses: CourseRow[]
     lecturers: LecturerRow[]
+    departments: DepartmentRow[]
+    institutionId: string
 }
 
-export function CourseClient({ initialCourses, lecturers }: Props) {
+export function CourseClient({ initialCourses, lecturers, departments, institutionId }: Props) {
     const [courses, setCourses] = useState<CourseRow[]>(initialCourses)
     const [isSheetOpen, setIsSheetOpen] = useState(false)
     const [editingCourse, setEditingCourse] = useState<CourseRow | null>(null)
@@ -46,8 +54,7 @@ export function CourseClient({ initialCourses, lecturers }: Props) {
     const [description, setDescription] = useState("")
     const [lecturerId, setLecturerId] = useState<string>("")
     const [creditHours, setCreditHours] = useState(3)
-    const [departmentId] = useState("DEPT-CS")
-    const [institutionId] = useState("INST-001")
+    const [departmentId, setDepartmentId] = useState("")
 
     // Schedule state
     const [scheduleCourse, setScheduleCourse] = useState<CourseRow | null>(null)
@@ -60,6 +67,11 @@ export function CourseClient({ initialCourses, lecturers }: Props) {
 
     const resetForm = () => {
         setCode(""); setName(""); setDescription(""); setLecturerId(""); setCreditHours(3)
+        // Set first available department or keep current if valid
+        const firstDept = departments[0]
+        if (firstDept && !departmentId) {
+            setDepartmentId(firstDept.id)
+        }
         setEditingCourse(null)
     }
 
@@ -70,6 +82,7 @@ export function CourseClient({ initialCourses, lecturers }: Props) {
         setDescription(course.description ?? "")
         setLecturerId(course.lecturerId ?? "")
         setCreditHours(course.creditHours)
+        setDepartmentId(course.departmentId)
         setIsSheetOpen(true)
     }
 
@@ -77,6 +90,17 @@ export function CourseClient({ initialCourses, lecturers }: Props) {
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        
+        // Client-side validation
+        if (!departmentId) {
+            toast.error("Please select a department")
+            return
+        }
+        if (!institutionId) {
+            toast.error("Institution not configured. Please contact administrator.")
+            return
+        }
+        
         setIsLoading(true)
         try {
             if (editingCourse) {
@@ -103,7 +127,8 @@ export function CourseClient({ initialCourses, lecturers }: Props) {
                 }
             }
             setIsSheetOpen(false)
-        } catch {
+        } catch (err) {
+            console.error("Submit error:", err)
             toast.error("An unexpected error occurred")
         } finally {
             setIsLoading(false)
@@ -230,6 +255,29 @@ export function CourseClient({ initialCourses, lecturers }: Props) {
                                         value={creditHours} onChange={e => setCreditHours(parseInt(e.target.value))}
                                         disabled={isLoading} />
                                 </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="department">Department *</Label>
+                                <Select 
+                                    value={departmentId || (departments[0]?.id ?? "")} 
+                                    onValueChange={v => setDepartmentId(v)} 
+                                    required
+                                >
+                                    <SelectTrigger id="department">
+                                        <SelectValue placeholder="Select a department" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {departments.length === 0 ? (
+                                            <SelectItem value="none" disabled>No departments available</SelectItem>
+                                        ) : (
+                                            departments.map(d => (
+                                                <SelectItem key={d.id} value={d.id}>
+                                                    {d.name} ({d.code})
+                                                </SelectItem>
+                                            ))
+                                        )}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="name">Course Name *</Label>
