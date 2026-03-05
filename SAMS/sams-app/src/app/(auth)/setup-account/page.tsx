@@ -20,19 +20,17 @@ export default async function SetupAccountPage({
 
     if (!token) {
         return (
-            <div className="flex h-screen w-screen flex-col items-center justify-center bg-background">
-                <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] animate-in fade-in zoom-in-95 duration-500">
-                    <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-center">
-                        <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
-                        <h1 className="text-2xl font-bold text-destructive mb-2">
-                            Invalid Link
-                        </h1>
-                        <p className="text-destructive/80">
-                            No setup token provided. Please use the link sent to your email.
-                        </p>
-                    </div>
+            <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 sm:p-8 border-none shadow-none lg:border-solid lg:shadow-sm bg-transparent lg:bg-card animate-in fade-in zoom-in-95 duration-500">
+                <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-center">
+                    <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
+                    <h1 className="text-2xl font-bold text-destructive mb-2">
+                        Invalid Link
+                    </h1>
+                    <p className="text-destructive/80">
+                        No setup token provided. Please use the link sent to your email.
+                    </p>
                 </div>
-            </div>
+            </Card>
         );
     }
 
@@ -40,39 +38,33 @@ export default async function SetupAccountPage({
 
     if (!success || !data) {
         return (
-            <div className="flex h-screen w-screen flex-col items-center justify-center bg-background">
-                <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] animate-in fade-in zoom-in-95 duration-500">
-                    <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-center">
-                        <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
-                        <h1 className="text-2xl font-bold text-destructive mb-2">
-                            Expired or Invalid Link
-                        </h1>
-                        <p className="text-destructive/80">
-                            {error || "This setup link is no longer valid. Please request a new one from your administrator."}
-                        </p>
-                    </div>
+            <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 sm:p-8 border-none shadow-none lg:border-solid lg:shadow-sm bg-transparent lg:bg-card animate-in fade-in zoom-in-95 duration-500">
+                <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-center">
+                    <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
+                    <h1 className="text-2xl font-bold text-destructive mb-2">
+                        Expired or Invalid Link
+                    </h1>
+                    <p className="text-destructive/80">
+                        {error || "This setup link is no longer valid. Please request a new one from your administrator."}
+                    </p>
                 </div>
-            </div>
+            </Card>
         );
     }
 
     return (
-        <div className="flex h-screen w-screen flex-col items-center justify-center bg-background">
-            <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px]">
-                <Card className="border border-border/50 backdrop-blur-xl p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-500">
-                    <div className="flex flex-col space-y-2 text-center pb-2">
-                        <h1 className="text-2xl font-semibold tracking-tight">
-                            Welcome to SAMS
-                        </h1>
-                        <p className="text-sm text-muted-foreground">
-                            Set up your password for <strong className="font-medium text-foreground">{data.email}</strong>
-                        </p>
-                    </div>
-                    <div className="grid gap-6">
-                        <SetupAccountForm token={token} />
-                    </div>
-                </Card>
+        <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 sm:p-8 border-none shadow-none lg:border-solid lg:shadow-sm bg-transparent lg:bg-card animate-in fade-in zoom-in-95 duration-500">
+            <div className="flex flex-col space-y-2 text-center pb-2">
+                <h1 className="text-2xl font-semibold tracking-tight">
+                    Welcome to SAMS
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                    Set up your password for <strong className="font-medium text-foreground">{data.email}</strong>
+                </p>
             </div>
-        </div>
+            <div className="grid gap-6">
+                <SetupAccountForm token={token} />
+            </div>
+        </Card>
     );
 }

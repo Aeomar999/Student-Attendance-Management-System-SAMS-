@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
 import { resetPasswordWithToken } from "@/app/actions/auth";
+import { Card } from "@/components/ui/card";
 
 function ResetPasswordForm() {
     const searchParams = useSearchParams();
@@ -76,8 +77,8 @@ function ResetPasswordForm() {
     if (success) {
         return (
             <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                    <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                    <svg className="h-8 w-8 text-green-600 dark:text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                 </div>
@@ -155,31 +156,10 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
     return (
-        <div className="container relative h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-            <div className="relative hidden h-full flex-col bg-zinc-900 p-10 text-white dark:border-r lg:flex">
-                <div className="absolute inset-0 bg-zinc-900" />
-                <div className="relative z-20 flex items-center text-lg font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-6 w-6">
-                        <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
-                    </svg>
-                    SAMS
-                </div>
-                <div className="relative z-20 mt-auto">
-                    <blockquote className="space-y-2">
-                        <p className="text-lg">
-                            &quot;Your account security matters. Set a strong, unique password.&quot;
-                        </p>
-                        <footer className="text-sm">SAMS Team</footer>
-                    </blockquote>
-                </div>
-            </div>
-            <div className="lg:p-8">
-                <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
-                    <Suspense fallback={<div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">Loading...</div>}>
-                        <ResetPasswordForm />
-                    </Suspense>
-                </div>
-            </div>
-        </div>
+        <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 sm:p-8 border-none shadow-none lg:border-solid lg:shadow-sm bg-transparent lg:bg-card">
+            <Suspense fallback={<div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">Loading...</div>}>
+                <ResetPasswordForm />
+            </Suspense>
+        </Card>
     );
 }
