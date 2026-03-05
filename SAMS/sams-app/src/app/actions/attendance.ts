@@ -127,24 +127,41 @@ export async function getAttendanceStats() {
 
 export async function createAttendanceSession(data: z.infer<typeof sessionSchema>) {
     const authSession = await requireAuth()
+
+    // Guard: lecturer_id is NOT NULL in the DB — catch missing user id early
+    const lecturerId = authSession.user?.id
+    if (!lecturerId) {
+        return { success: false, error: "Could not identify the current user. Please sign out and sign in again." }
+    }
+
     try {
         const v = sessionSchema.parse(data)
+
+        // Build a proper timestamp for start_time by combining sessionDate + startTime
+        const startDt = new Date(`${v.sessionDate}T${v.startTime}:00`)
+        if (isNaN(startDt.getTime())) {
+            return { success: false, error: "Invalid session date or start time provided." }
+        }
+
         const row = await withDb(async (db) => {
-            const startDt = new Date(`${v.sessionDate}T${v.startTime}`)
             const result = await db.query(`
                 INSERT INTO attendance_sessions
-                (course_id, lecturer_id, session_date, start_time, end_time, status, grace_period, total_present, total_absent, updated_at)
-                VALUES ($1, $2, $3, $4, $5, 'ACTIVE', $6, 0, 0, NOW())
+                (id, course_id, lecturer_id, session_date, start_time, end_time, status, grace_period, total_present, total_absent, updated_at)
+                VALUES (gen_random_uuid(), $1, $2, $3::date, $4, $5, 'ACTIVE', $6, 0, 0, NOW())
                 RETURNING id, status
-            `, [v.courseId, authSession.user.id, v.sessionDate, startDt.toISOString(), null, v.gracePeriod])
+            `, [v.courseId, lecturerId, v.sessionDate, startDt.toISOString(), null, v.gracePeriod])
             return result.rows[0]
         })
         revalidatePath("/dashboard/attendance")
         return { success: true, data: row }
     } catch (error) {
-        if (error instanceof z.ZodError) return { success: false, error: error.issues[0]?.message || "Validation failed" }
-        console.error("Failed to create session:", error)
-        return { success: false, error: "Failed to create session" }
+        if (error instanceof z.ZodError) {
+            return { success: false, error: error.issues[0]?.message ?? "Validation failed" }
+        }
+        // Surface the real DB error message so failures are never silent
+        const dbMessage = error instanceof Error ? error.message : String(error)
+        console.error("Failed to create attendance session:", dbMessage)
+        return { success: false, error: `Failed to create session: ${dbMessage}` }
     }
 }
 
@@ -214,8 +231,8 @@ export async function markAttendance(
     try {
         await withDb(async (db) => {
             await db.query(`
-                INSERT INTO attendance_records (session_id, student_id, status, is_manual, manual_reason, recognized_at, updated_at)
-                VALUES ($1, $2, $3, true, $4, $5, NOW())
+                INSERT INTO attendance_records (id, session_id, student_id, status, is_manual, manual_reason, recognized_at, updated_at)
+                VALUES (gen_random_uuid(), $1, $2, $3, true, $4, $5, NOW())
                 ON CONFLICT (session_id, student_id)
                 DO UPDATE SET status=$3, is_manual=true, manual_reason=$4,
                 recognized_at=$5, updated_at=NOW()

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Fragment } from "react"
 import Link from "next/link"
 import { CalendarCheck, Plus, CheckCircle2, XCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
@@ -301,7 +301,7 @@ const recordStatusIcon = (status: string) => {
                                 </TableCell>
                             </TableRow>
                         ) : sessions.map(session => (
-                            <>
+                            <Fragment key={session.id}>
                                 <TableRow
                                     key={session.id}
                                     className="cursor-pointer hover:bg-muted/50"
@@ -437,7 +437,7 @@ const recordStatusIcon = (status: string) => {
                                         </TableCell>
                                     </TableRow>
                                 )}
-                            </>
+                            </Fragment>
                         ))}
                     </TableBody>
                 </Table>
