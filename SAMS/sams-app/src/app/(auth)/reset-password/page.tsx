@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Suspense } from "react";
 import { resetPasswordWithToken } from "@/app/actions/auth";
+import { Card } from "@/components/ui/card";
+
 function ResetPasswordForm() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token") || "";
@@ -154,16 +155,10 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
     return (
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 lg:p-8 relative z-10 
-            max-lg:text-white 
-            [&_input]:max-lg:bg-zinc-900/50 [&_input]:max-lg:border [&_input]:max-lg:border-white/40 [&_input]:max-lg:text-white [&_input]:max-lg:placeholder:text-zinc-500
-            [&_p.text-muted-foreground]:max-lg:text-zinc-400 
-            [&_a]:max-lg:text-zinc-300 [&_a:hover]:max-lg:text-white 
-            [&_label]:max-lg:text-zinc-200 
-            [&_button]:max-lg:bg-white [&_button]:max-lg:text-zinc-950 [&_button:hover]:max-lg:bg-zinc-300">
+        <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 lg:p-8 max-lg:bg-transparent max-lg:border-none max-lg:shadow-none">
             <Suspense fallback={<div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">Loading...</div>}>
                 <ResetPasswordForm />
             </Suspense>
-        </div>
+        </Card>
     );
 }

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { requestPasswordReset } from "@/app/actions/auth";
+import { Card } from "@/components/ui/card";
+
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,13 +31,7 @@ export default function ForgotPasswordPage() {
     }
 
     return (
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 lg:p-8 relative z-10 
-            max-lg:text-white 
-            [&_input]:max-lg:bg-zinc-900/50 [&_input]:max-lg:border [&_input]:max-lg:border-white/40 [&_input]:max-lg:text-white [&_input]:max-lg:placeholder:text-zinc-500
-            [&_p.text-muted-foreground]:max-lg:text-zinc-400 
-            [&_a]:max-lg:text-zinc-300 [&_a:hover]:max-lg:text-white 
-            [&_label]:max-lg:text-zinc-200 
-            [&_button]:max-lg:bg-white [&_button]:max-lg:text-zinc-950 [&_button:hover]:max-lg:bg-zinc-300">
+        <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 lg:p-8 max-lg:bg-transparent max-lg:border-none max-lg:shadow-none">
             {submitted ? (
                 <div className="flex flex-col items-center space-y-4 text-center">
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
@@ -102,6 +98,6 @@ export default function ForgotPasswordPage() {
                     </div>
                 </>
             )}
-        </div>
+        </Card>
     );
 }

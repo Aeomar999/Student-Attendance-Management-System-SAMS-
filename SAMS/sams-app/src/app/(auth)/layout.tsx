@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <AuthHero />
             
             {/* Right side: The dynamic auth form (Login / Reset Password / Setup) */}
-            <div className="relative z-10 w-full flex items-center justify-center p-4 lg:p-8">
+            <div className="relative z-10 w-full flex items-center justify-center p-4 lg:p-8 mobile-dark-theme">
                 {children}
             </div>
         </div>
