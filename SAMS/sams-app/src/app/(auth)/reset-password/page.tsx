@@ -5,8 +5,6 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
 import { resetPasswordWithToken } from "@/app/actions/auth";
-import { Card } from "@/components/ui/card";
-
 function ResetPasswordForm() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token") || "";
@@ -156,10 +154,10 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
     return (
-        <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 lg:p-8 shadow-2xl backdrop-blur-md bg-background/95 dark:bg-card">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 lg:p-8 max-lg:border max-lg:border-white/20 max-lg:rounded-xl max-lg:text-white [&_input]:max-lg:bg-white/5 [&_input]:max-lg:border-white/20 [&_input]:max-lg:text-white [&_p.text-muted-foreground]:max-lg:text-zinc-400 [&_a]:max-lg:text-primary [&_label]:max-lg:text-white">
             <Suspense fallback={<div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">Loading...</div>}>
                 <ResetPasswordForm />
             </Suspense>
-        </Card>
+        </div>
     );
 }

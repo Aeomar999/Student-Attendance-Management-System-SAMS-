@@ -2,8 +2,6 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/login-form";
-import { Card } from "@/components/ui/card";
-
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
@@ -21,7 +19,7 @@ export default async function LoginPage({
     const showError = params?.error;
 
     return (
-        <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 lg:p-8 shadow-2xl backdrop-blur-md bg-background/95 dark:bg-card">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 lg:p-8 max-lg:border max-lg:border-white/20 max-lg:rounded-xl max-lg:text-white [&_input]:max-lg:bg-white/5 [&_input]:max-lg:border-white/20 [&_input]:max-lg:text-white [&_p.text-muted-foreground]:max-lg:text-zinc-400 [&_a]:max-lg:text-primary [&_label]:max-lg:text-white">
             {showSetupSuccess && (
                 <div className="rounded-md bg-primary/5 border border-primary/20 p-4 text-sm text-primary">
                     Your account has been set up successfully. Please log in with your email and password.
@@ -70,6 +68,6 @@ export default async function LoginPage({
                 </Link>
                 .
             </p>
-        </Card>
+        </div>
     );
 }

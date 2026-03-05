@@ -3,8 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { requestPasswordReset } from "@/app/actions/auth";
-import { Card } from "@/components/ui/card";
-
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,7 +29,7 @@ export default function ForgotPasswordPage() {
     }
 
     return (
-        <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 lg:p-8 shadow-2xl backdrop-blur-md bg-background/95 dark:bg-card">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 lg:p-8 max-lg:border max-lg:border-white/20 max-lg:rounded-xl max-lg:text-white [&_input]:max-lg:bg-white/5 [&_input]:max-lg:border-white/20 [&_input]:max-lg:text-white [&_p.text-muted-foreground]:max-lg:text-zinc-400 [&_a]:max-lg:text-primary [&_label]:max-lg:text-white">
             {submitted ? (
                 <div className="flex flex-col items-center space-y-4 text-center">
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
@@ -98,6 +96,6 @@ export default function ForgotPasswordPage() {
                     </div>
                 </>
             )}
-        </Card>
+        </div>
     );
 }

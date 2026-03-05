@@ -5,7 +5,7 @@ import { ScanFace, Fingerprint, ShieldCheck, Zap } from "lucide-react";
 
 export function AuthHero() {
     return (
-        <div className="absolute inset-0 z-0 lg:relative lg:z-auto h-full w-full flex-col bg-zinc-950 p-6 lg:p-10 text-white dark:border-r flex overflow-hidden">
+        <div className="fixed inset-0 z-0 lg:relative lg:inset-auto lg:z-auto h-full w-full flex-col bg-zinc-950 p-6 lg:p-10 text-white dark:border-r flex overflow-hidden">
             {/* Background Effects */}
             <div className="absolute inset-0 bg-zinc-950" />
             <div className="absolute inset-0 bg-linear-to-br from-primary/20 via-primary/5 to-zinc-950/0 pointer-events-none" />
