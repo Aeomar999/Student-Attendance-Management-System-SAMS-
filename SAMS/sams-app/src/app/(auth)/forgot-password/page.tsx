@@ -29,7 +29,13 @@ export default function ForgotPasswordPage() {
     }
 
     return (
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 lg:p-8 max-lg:border max-lg:border-white/20 max-lg:rounded-xl max-lg:text-white [&_input]:max-lg:bg-white/5 [&_input]:max-lg:border-white/20 [&_input]:max-lg:text-white [&_p.text-muted-foreground]:max-lg:text-zinc-400 [&_a]:max-lg:text-primary [&_label]:max-lg:text-white">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 lg:p-8 relative z-10 
+            max-lg:text-white 
+            [&_input]:max-lg:bg-zinc-900/50 [&_input]:max-lg:border [&_input]:max-lg:border-white/40 [&_input]:max-lg:text-white [&_input]:max-lg:placeholder:text-zinc-500
+            [&_p.text-muted-foreground]:max-lg:text-zinc-400 
+            [&_a]:max-lg:text-zinc-300 [&_a:hover]:max-lg:text-white 
+            [&_label]:max-lg:text-zinc-200 
+            [&_button]:max-lg:bg-white [&_button]:max-lg:text-zinc-950 [&_button:hover]:max-lg:bg-zinc-300">
             {submitted ? (
                 <div className="flex flex-col items-center space-y-4 text-center">
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
