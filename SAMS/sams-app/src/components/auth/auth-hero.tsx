@@ -5,10 +5,10 @@ import { ScanFace, Fingerprint, ShieldCheck, Zap } from "lucide-react";
 
 export function AuthHero() {
     return (
-        <div className="relative hidden h-full w-full flex-col bg-zinc-950 p-10 text-white dark:border-r lg:flex overflow-hidden">
+        <div className="absolute inset-0 z-0 lg:relative lg:z-auto h-full w-full flex-col bg-zinc-950 p-6 lg:p-10 text-white dark:border-r flex overflow-hidden">
             {/* Background Effects */}
             <div className="absolute inset-0 bg-zinc-950" />
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/5 to-zinc-950/0 pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-br from-primary/20 via-primary/5 to-zinc-950/0 pointer-events-none" />
             
             {/* Animated Grid Pattern */}
             <div 
@@ -36,7 +36,7 @@ export function AuthHero() {
             />
 
             {/* Header Identity */}
-            <div className="relative z-20 flex items-center text-xl font-bold tracking-tight">
+            <div className="relative z-20 hidden lg:flex items-center text-xl font-bold tracking-tight">
                 <div className="flex items-center justify-center mr-3 h-10 w-10 rounded-lg bg-primary/20 text-primary border border-primary/30 backdrop-blur-sm">
                     <ScanFace className="h-6 w-6" />
                 </div>
@@ -44,7 +44,7 @@ export function AuthHero() {
             </div>
 
             {/* Main Center Content */}
-            <div className="relative z-20 my-auto w-full max-w-[500px]">
+            <div className="relative z-20 my-auto w-full max-w-[500px] hidden lg:block">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -57,7 +57,7 @@ export function AuthHero() {
                     
                     <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-6 leading-[1.1]">
                         Seamless & Secure <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">
+                        <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-blue-400">
                             Facial Recognition
                         </span>
                     </h1>
@@ -87,7 +87,7 @@ export function AuthHero() {
             </div>
 
             {/* Footer */}
-            <div className="relative z-20 mt-auto border-t border-white/10 pt-6">
+            <div className="relative z-20 mt-auto border-t border-white/10 pt-6 hidden lg:block">
                 <div className="flex items-center justify-between">
                     <p className="text-sm text-zinc-500">
                         &copy; {new Date().getFullYear()} Smart Attendance Management System.

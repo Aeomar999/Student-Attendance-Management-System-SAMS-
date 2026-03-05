@@ -21,7 +21,7 @@ export default async function LoginPage({
     const showError = params?.error;
 
     return (
-        <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 sm:p-8 border-none shadow-none lg:border-solid lg:shadow-sm bg-transparent lg:bg-card">
+        <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px] p-6 lg:p-8 shadow-2xl backdrop-blur-md bg-background/95 dark:bg-card">
             {showSetupSuccess && (
                 <div className="rounded-md bg-primary/5 border border-primary/20 p-4 text-sm text-primary">
                     Your account has been set up successfully. Please log in with your email and password.
