@@ -14,6 +14,15 @@ import {
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+import * as XLSX from "xlsx"
 import { markAttendance } from "@/app/actions/attendance"
 
 interface SessionDetail {
@@ -119,6 +128,55 @@ const statusColor = (status: string) => {
         URL.revokeObjectURL(url)
     }
 
+    function exportSessionPDF() {
+        const doc = new jsPDF()
+        
+        doc.setFontSize(16)
+        doc.text(`Attendance Report: ${session.courseCode} - ${session.courseName}`, 14, 20)
+        
+        doc.setFontSize(11)
+        doc.text(`Date: ${format(new Date(session.sessionDate), "MMMM d, yyyy")}`, 14, 28)
+        doc.text(`Lecturer: ${session.lecturerName || 'N/A'}`, 14, 34)
+        doc.text(`Total Students: ${records.length}`, 14, 40)
+        
+        const tableColumn = ["Student ID", "Name", "Status", "Recognized At", "Method"]
+        const tableRows = records.map(r => [
+            r.studentRefId,
+            r.studentName,
+            r.status,
+            r.recognizedAt ? format(new Date(r.recognizedAt), "HH:mm") : "N/A",
+            r.isManual ? "Manual" : "FR"
+        ])
+
+        autoTable(doc, {
+            startY: 45,
+            head: [tableColumn],
+            body: tableRows,
+            theme: "striped",
+            headStyles: { fillColor: [25, 118, 210] }
+        })
+
+        doc.save(`session-${session.courseCode}-${format(new Date(session.sessionDate), "yyyy-MM-dd")}.pdf`)
+    }
+
+    function exportSessionExcel() {
+        const data = records.map(r => ({
+            "Student ID": r.studentRefId,
+            "Name": r.studentName,
+            "Email": r.email,
+            "Status": r.status,
+            "Recognized At": r.recognizedAt ? format(new Date(r.recognizedAt), "HH:mm") : "N/A",
+            "Confidence": r.confidenceScore ? `${(r.confidenceScore * 100).toFixed(0)}%` : "N/A",
+            "Method": r.isManual ? "Manual" : "FR"
+        }))
+        
+        const ws = XLSX.utils.json_to_sheet(data)
+        const wb = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(wb, ws, "Attendance")
+        
+        XLSX.writeFile(wb, `session-${session.courseCode}-${format(new Date(session.sessionDate), "yyyy-MM-dd")}.xlsx`)
+    }
+
     return (
         <div className="space-y-6">
             {/* Back link + Header */}
@@ -171,9 +229,18 @@ const statusColor = (status: string) => {
                     <UserCheck className="h-4 w-4" />
                     <span>{records.length} students · Grace period: {session.gracePeriod} min</span>
                 </div>
-                <Button variant="outline" onClick={exportSessionCSV}>
-                    <Download className="mr-2 h-4 w-4" /> Export CSV
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline">
+                            <Download className="mr-2 h-4 w-4" /> Export
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={exportSessionPDF}>Export as PDF</DropdownMenuItem>
+                        <DropdownMenuItem onClick={exportSessionExcel}>Export as Excel</DropdownMenuItem>
+                        <DropdownMenuItem onClick={exportSessionCSV}>Export as CSV</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
 
             {/* Records Table */}

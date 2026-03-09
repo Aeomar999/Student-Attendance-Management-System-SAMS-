@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { UserPlus, ScanFace, Camera, Loader2, Upload, HelpCircle, FileText, Download } from "lucide-react";
+import { useState, useRef } from "react";
+import { UserPlus, ScanFace, Loader2, Upload, HelpCircle, FileText, Download, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import Webcam from "react-webcam";
+import { FaceEnrollment } from "@/components/students/face-enrollment";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -78,8 +78,7 @@ export function StudentClient({
 
     // Face Capture states
     const [isCapturing, setIsCapturing] = useState(false);
-    const [faceImageSrc, setFaceImageSrc] = useState<string | null>(null);
-    const webcamRef = useRef<Webcam>(null);
+    const [faceImages, setFaceImages] = useState<string[]>([]);
 
     const resetForm = () => {
         setFirstName("");
@@ -92,7 +91,7 @@ export function StudentClient({
         setDepartmentId("DEPT-CS");
         setEditingStudent(null);
         setIsCapturing(false);
-        setFaceImageSrc(null);
+        setFaceImages([]);
     };
 
     const handleOpenEdit = (student: StudentType) => {
@@ -112,17 +111,6 @@ export function StudentClient({
         resetForm();
         setIsSheetOpen(true);
     };
-
-    const captureFace = useCallback(() => {
-        const imageSrc = webcamRef.current?.getScreenshot();
-        if (imageSrc) {
-            setFaceImageSrc(imageSrc);
-            setIsCapturing(false);
-            toast.success("Face image captured successfully!");
-        } else {
-            toast.error("Failed to capture image. Please ensure camera access is granted.");
-        }
-    }, [webcamRef]);
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -166,8 +154,8 @@ export function StudentClient({
 
                 if (result.success && "data" in result && result.data) {
                     toast.success("Student created successfully");
-                    if (faceImageSrc) {
-                        toast.info("Face enrollment mock submitted to FR engine");
+                    if (faceImages.length > 0) {
+                        toast.info(`Face enrollment mock submitted to FR engine (${faceImages.length} angles)`);
                         // Mock hitting the FastAPI /register endpoint
                     }
                     window.location.reload();
@@ -404,52 +392,47 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                                 <div className="space-y-4 pt-4 border-t">
                                     <Label className="text-base">Facial Recognition Setup</Label>
                                     
-                                    {faceImageSrc ? (
+                                    {faceImages.length > 0 ? (
                                         <div className="space-y-3">
-                                            <div className="relative rounded-md overflow-hidden border">
-                                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                <img src={faceImageSrc} alt="Face Capture" className="w-full h-auto object-cover" />
+                                            <div className="flex items-center gap-3 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                                                <div className="bg-primary/10 p-2 rounded-full text-primary">
+                                                    <CheckCircle2 className="h-6 w-6" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold text-primary">Enrollment Complete</p>
+                                                    <p className="text-xs text-muted-foreground">{faceImages.length} facial angles captured.</p>
+                                                </div>
                                             </div>
-                                            <Button type="button" variant="outline" className="w-full" onClick={() => setFaceImageSrc(null)}>
-                                                Retake Photo
+                                            <Button type="button" variant="outline" className="w-full" onClick={() => setFaceImages([])}>
+                                                Retake Face ID
                                             </Button>
-                                        </div>
-                                    ) : isCapturing ? (
-                                        <div className="space-y-3">
-                                            <div className="relative rounded-md overflow-hidden bg-black aspect-video flex items-center justify-center">
-                                                <Webcam
-                                                    audio={false}
-                                                    ref={webcamRef}
-                                                    screenshotFormat="image/jpeg"
-                                                    videoConstraints={{ facingMode: "user" }}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <Button type="button" variant="outline" className="flex-1" onClick={() => setIsCapturing(false)}>
-                                                    Cancel
-                                                </Button>
-                                                <Button type="button" className="flex-1" onClick={captureFace}>
-                                                    Snap Photo
-                                                </Button>
-                                            </div>
                                         </div>
                                     ) : (
                                         <Button type="button" variant="secondary" aria-label="Click to capture face enrollment data" className="w-full h-24 border-dashed border-2 hover:bg-muted/50 transition-colors" onClick={() => setIsCapturing(true)}>
                                             <div className="flex flex-col items-center gap-2">
-                                                <Camera className="h-6 w-6 text-muted-foreground" />
-                                                <span className="text-sm font-medium text-muted-foreground">Click to capture face enrollment data</span>
+                                                <ScanFace className="h-6 w-6 text-muted-foreground" />
+                                                <span className="text-sm font-medium text-muted-foreground">Setup Face ID</span>
                                             </div>
                                         </Button>
                                     )}
                                 </div>
                             )}
                             
+                            {isCapturing && (
+                                <FaceEnrollment 
+                                    onComplete={(images) => {
+                                        setFaceImages(images);
+                                        setIsCapturing(false);
+                                    }}
+                                    onCancel={() => setIsCapturing(false)}
+                                />
+                            )}
+                            
                             <div className="pt-6 flex justify-end gap-2 border-t">
                                 <Button type="button" variant="ghost" onClick={() => setIsSheetOpen(false)}>
                                     Cancel
                                 </Button>
-                                <Button type="submit" disabled={isLoading || (!editingStudent && !faceImageSrc)}>
+                                <Button type="submit" disabled={isLoading || (!editingStudent && faceImages.length === 0)}>
                                     {isLoading ? "Saving..." : editingStudent ? "Update Student" : "Enroll Student"}
                                 </Button>
                             </div>

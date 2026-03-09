@@ -8,6 +8,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+import * as XLSX from "xlsx"
 import type { OverallStats, CourseAttendanceStats, AtRiskStudent } from "@/app/actions/reports"
 
 type Props = {
@@ -43,6 +52,84 @@ export function ReportsClient({ stats, courseStats, atRiskStudents }: Props) {
         URL.revokeObjectURL(url)
     }
 
+    const exportPDF = () => {
+        const doc = new jsPDF()
+        
+        doc.setFontSize(20)
+        doc.text("SAMS Institutional Attendance Report", 14, 22)
+        
+        doc.setFontSize(11)
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30)
+        
+        // Overview Stats
+        doc.text(`Total Students: ${stats.totalStudents}`, 14, 40)
+        doc.text(`Total Sessions: ${stats.totalSessions}`, 14, 46)
+        doc.text(`Overall Attendance Rate: ${stats.overallAttendanceRate}%`, 14, 52)
+        doc.text(`Students At Risk: ${stats.studentsAtRisk}`, 14, 58)
+
+        // Course Data
+        doc.setFontSize(14)
+        doc.text("Course Attendance Summary", 14, 70)
+        
+        const tableColumn = ["Course Code", "Course Name", "Sessions", "Records", "Present", "Rate"]
+        const tableRows = courseStats.map(c => [
+            c.courseCode,
+            c.courseName,
+            c.totalSessions,
+            c.totalRecords,
+            c.totalPresent,
+            `${c.attendanceRate}%`
+        ])
+
+        autoTable(doc, {
+            startY: 75,
+            head: [tableColumn],
+            body: tableRows,
+            theme: "grid",
+            headStyles: { fillColor: [25, 118, 210] }
+        })
+
+        doc.save("sams-attendance-report.pdf")
+    }
+
+    const exportExcel = () => {
+        const courseData = courseStats.map(c => ({
+            "Course Code": c.courseCode,
+            "Course Name": c.courseName,
+            "Total Sessions": c.totalSessions,
+            "Total Records": c.totalRecords,
+            "Present": c.totalPresent,
+            "Attendance Rate (%)": c.attendanceRate
+        }))
+        const atRiskData = atRiskStudents.map(s => ({
+            "Student Name": s.studentName,
+            "Student ID": s.studentRefId,
+            "Email": s.email,
+            "Total Sessions": s.totalSessions,
+            "Present Count": s.presentCount,
+            "Attendance Rate (%)": s.attendanceRate
+        }))
+        
+        const wb = XLSX.utils.book_new()
+        
+        const wsOverview = XLSX.utils.json_to_sheet([{
+            "Total Students": stats.totalStudents,
+            "Total Sessions": stats.totalSessions,
+            "Overall Attendance Rate": `${stats.overallAttendanceRate}%`,
+            "Face Enrolled": stats.faceEnrolledCount,
+            "Students At Risk": stats.studentsAtRisk
+        }])
+        XLSX.utils.book_append_sheet(wb, wsOverview, "Overview")
+        
+        const wsCourses = XLSX.utils.json_to_sheet(courseData)
+        XLSX.utils.book_append_sheet(wb, wsCourses, "Courses")
+        
+        const wsAtRisk = XLSX.utils.json_to_sheet(atRiskData)
+        XLSX.utils.book_append_sheet(wb, wsAtRisk, "At Risk Students")
+        
+        XLSX.writeFile(wb, "sams-attendance-report.xlsx")
+    }
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -56,9 +143,18 @@ export function ReportsClient({ stats, courseStats, atRiskStudents }: Props) {
                         <p className="text-sm text-muted-foreground">Institutional attendance insights</p>
                     </div>
                 </div>
-                <Button variant="outline" onClick={exportCSV}>
-                    <Download className="mr-2 h-4 w-4" /> Export CSV
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline">
+                            <Download className="mr-2 h-4 w-4" /> Export Report
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={exportPDF}>Export as PDF</DropdownMenuItem>
+                        <DropdownMenuItem onClick={exportExcel}>Export as Excel</DropdownMenuItem>
+                        <DropdownMenuItem onClick={exportCSV}>Export as CSV</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
 
             {/* Overall Stats */}
