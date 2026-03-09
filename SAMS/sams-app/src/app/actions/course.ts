@@ -303,7 +303,6 @@ export async function addCourseSchedule(courseId: string, data: z.infer<typeof s
 
         logAuditEvent({
             userId: session.user.id,
-            userName: session.user.name || "Unknown Admin",
             action: "UPDATE",
             entityType: "COURSE",
             entityId: courseId,

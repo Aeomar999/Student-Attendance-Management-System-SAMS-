@@ -19,21 +19,21 @@ enum UserStatus {
 }
 
 model Institution {
-  id        String   @id @default(cuid())
-  name      String
-  code      String   @unique
-  address   String?
-  phone     String?
-  email     String?
-  status    String   @default("ACTIVE")
+  id      String  @id @default(cuid())
+  name    String
+  code    String  @unique
+  address String?
+  phone   String?
+  email   String?
+  status  String  @default("ACTIVE")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  users     User[]
-  students  Student[]
-  courses   Course[]
-  rooms     Room[]
+  users       User[]
+  students    Student[]
+  courses     Course[]
+  rooms       Room[]
   departments Department[]
 
   @@index([code])
@@ -42,12 +42,12 @@ model Institution {
 }
 
 model Department {
-  id           String   @id @default(cuid())
-  name         String
-  code         String   @unique
-  description  String?
+  id          String  @id @default(cuid())
+  name        String
+  code        String  @unique
+  description String?
 
-  institutionId String @map("institution_id")
+  institutionId String      @map("institution_id")
   institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -63,16 +63,16 @@ model Department {
 }
 
 model FaceEnrollment {
-  id            String   @id @default(cuid())
-  studentId     String   @unique @map("student_id")
-  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  
-  embeddings    Bytes?   @db.ByteA
-  imageCount    Int      @default(0) @map("image_count")
-  qualityScore  Float?   @map("quality_score")
-  enrolledAt    DateTime @default(now()) @map("enrolled_at")
-  enrolledBy    String?  @map("enrolled_by")
-  status        String   @default("ACTIVE")
+  id        String  @id @default(cuid())
+  studentId String  @unique @map("student_id")
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  embeddings   Bytes?   @db.ByteA
+  imageCount   Int      @default(0) @map("image_count")
+  qualityScore Float?   @map("quality_score")
+  enrolledAt   DateTime @default(now()) @map("enrolled_at")
+  enrolledBy   String?  @map("enrolled_by")
+  status       String   @default("ACTIVE")
 
   @@index([studentId])
   @@map("face_enrollments")
@@ -92,10 +92,10 @@ model User {
   lockedUntil    DateTime? @map("locked_until")
   lastLoginAt    DateTime? @map("last_login_at")
 
-  institutionId String? @map("institution_id")
+  institutionId String?      @map("institution_id")
   institution   Institution? @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  departmentId  String? @map("department_id")
-  department    Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  departmentId  String?      @map("department_id")
+  department    Department?  @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -164,15 +164,15 @@ model Student {
   status       UserStatus @default(ACTIVE)
   faceEnrolled Boolean    @default(false) @map("face_enrolled")
 
-  institutionId String @map("institution_id")
+  institutionId String      @map("institution_id")
   institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  departmentId  String @map("department_id")
-  department    Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  departmentId  String      @map("department_id")
+  department    Department  @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  courses StudentCourse[]
+  courses        StudentCourse[]
   faceEnrollment FaceEnrollment?
 
   @@index([studentId])
@@ -186,19 +186,19 @@ model Student {
 }
 
 model Course {
-  id          String   @id @default(cuid())
-  code        String   @unique
+  id          String  @id @default(cuid())
+  code        String  @unique
   name        String
   description String?
   semester    String?
-  capacity    Int      @default(0)
-  creditHours Int      @default(3) @map("credit_hours")
-  status      String   @default("ACTIVE")
+  capacity    Int     @default(0)
+  creditHours Int     @default(3) @map("credit_hours")
+  status      String  @default("ACTIVE")
 
-  departmentId  String @map("department_id")
-  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
-  lecturerId    String @map("lecturer_id")
-  institutionId String @map("institution_id")
+  departmentId  String      @map("department_id")
+  department    Department  @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  lecturerId    String      @map("lecturer_id")
+  institutionId String      @map("institution_id")
   institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -217,9 +217,9 @@ model Course {
 }
 
 model StudentCourse {
-  id        String   @id @default(cuid())
-  studentId String   @map("student_id")
-  courseId  String   @map("course_id")
+  id         String   @id @default(cuid())
+  studentId  String   @map("student_id")
+  courseId   String   @map("course_id")
   enrolledAt DateTime @default(now()) @map("enrolled_at")
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
@@ -267,6 +267,7 @@ model AttendanceRecord {
   recognizedAt    DateTime? @map("recognized_at")
   confidenceScore Float?    @map("confidence_score")
   isManual        Boolean   @default(false) @map("is_manual")
+  manualReason    String?   @map("manual_reason")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -289,7 +290,7 @@ model AuditLog {
   entityId   String?  @map("entity_id")
   oldValues  String?  @map("old_values")
   newValues  String?  @map("new_values")
-  details    String?  
+  details    String?
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([userId])
@@ -300,15 +301,15 @@ model AuditLog {
 }
 
 model MfaCredential {
-  id        String   @id @default(cuid())
-  userId    String   @map("user_id")
-  type      String   @default("totp") // totp, sms, email
-  secret    String
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  type        String   @default("totp") // totp, sms, email
+  secret      String
   backupCodes String[] @default([]) @map("backup_codes")
-  phone     String?  @map("phone")
-  verified  Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  phone       String?  @map("phone")
+  verified    Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@unique([userId, type])
   @@index([userId])
@@ -327,14 +328,14 @@ model PasswordHistory {
 }
 
 model Room {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   building    String?
-  capacity    Int      @default(0)
+  capacity    Int     @default(0)
   description String?
-  status      String   @default("ACTIVE")
+  status      String  @default("ACTIVE")
 
-  institutionId String @map("institution_id")
+  institutionId String      @map("institution_id")
   institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -349,18 +350,18 @@ model Room {
 }
 
 model Schedule {
-  id          String   @id @default(cuid())
-  courseId    String   @map("course_id")
-  dayOfWeek   String   @map("day_of_week")
-  startTime   String   @map("start_time")
-  endTime     String   @map("end_time")
-  roomId      String?  @map("room_id")
+  id        String  @id @default(cuid())
+  courseId  String  @map("course_id")
+  dayOfWeek String  @map("day_of_week")
+  startTime String  @map("start_time")
+  endTime   String  @map("end_time")
+  roomId    String? @map("room_id")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  course Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  room   Room?    @relation(fields: [roomId], references: [id])
+  course Course? @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  room   Room?   @relation(fields: [roomId], references: [id])
 
   @@index([courseId])
   @@index([roomId])
