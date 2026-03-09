@@ -1,5 +1,7 @@
 "use server"
 
+import { logAuditEvent } from "@/lib/audit-logger"
+
 import { auth } from "@/lib/auth"
 import { withDb } from "@/lib/db"
 import { z } from "zod"
@@ -71,6 +73,14 @@ export async function createUser(data: z.infer<typeof userSchema>) {
         const magicLink = `${process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")}/setup-account?token=${token}`
         console.warn(`[EMAIL MOCK] Setup link for ${result.email}: ${magicLink}`)
 
+        await logAuditEvent({
+            userId: (await auth())?.user?.id ?? null,
+            action: "CREATE",
+            entityType: "USER",
+            entityId: result.id,
+            details: { email: result.email, role: result.role },
+        })
+
         revalidatePath("/dashboard/users")
         return { success: true, data: result, magicLink }
     } catch (error) {
@@ -94,6 +104,15 @@ export async function updateUser(id: string, data: z.infer<typeof updateUserSche
         sets.push(`updated_at=NOW()`)
         vals.push(id)
         await withDb(db => db.query(`UPDATE users SET ${sets.join(", ")} WHERE id=$${idx}`, vals))
+
+        await logAuditEvent({
+            userId: (await auth())?.user?.id ?? null,
+            action: "UPDATE",
+            entityType: "USER",
+            entityId: id,
+            details: { updatedFields: Object.keys(v) },
+        })
+
         revalidatePath("/dashboard/users")
         return { success: true }
     } catch (error) {
@@ -108,6 +127,14 @@ export async function deleteUser(id: string) {
     if (session.user.id === id) return { success: false, error: "Cannot delete your own account" }
     try {
         await withDb(db => db.query("DELETE FROM users WHERE id=$1", [id]))
+
+        await logAuditEvent({
+            userId: session.user.id,
+            action: "DELETE",
+            entityType: "USER",
+            entityId: id,
+        })
+
         revalidatePath("/dashboard/users")
         return { success: true }
     } catch (error) {
@@ -124,6 +151,14 @@ export async function suspendUser(id: string) {
             "UPDATE users SET status='SUSPENDED', updated_at=NOW() WHERE id=$1",
             [id]
         ))
+
+        await logAuditEvent({
+            userId: session.user.id,
+            action: "SUSPEND",
+            entityType: "USER",
+            entityId: id,
+        })
+
         revalidatePath("/dashboard/users")
         return { success: true }
     } catch (error) {
@@ -139,6 +174,14 @@ export async function activateUser(id: string) {
             "UPDATE users SET status='ACTIVE', failed_attempts=0, locked_until=NULL, updated_at=NOW() WHERE id=$1",
             [id]
         ))
+
+        await logAuditEvent({
+            userId: (await auth())?.user?.id ?? null,
+            action: "ACTIVATE",
+            entityType: "USER",
+            entityId: id,
+        })
+
         revalidatePath("/dashboard/users")
         return { success: true }
     } catch (error) {

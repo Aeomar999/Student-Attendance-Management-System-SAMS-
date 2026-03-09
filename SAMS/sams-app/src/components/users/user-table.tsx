@@ -38,16 +38,16 @@ interface UserTableProps {
     users: User[];
 }
 
-const ROLE_COLORS: Record<string, "default" | "secondary" | "destructive"> = {
-    SUPER_ADMIN: "destructive",
-    ADMIN: "default",
-    LECTURER: "secondary",
+const ROLE_COLORS: Record<string, string> = {
+    SUPER_ADMIN: "bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-300",
+    ADMIN: "bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300",
+    LECTURER: "bg-teal-100 text-teal-800 dark:bg-teal-500/20 dark:text-teal-300",
 };
 
-const STATUS_COLORS: Record<string, "default" | "secondary" | "destructive"> = {
-    ACTIVE: "default",
-    INACTIVE: "secondary",
-    SUSPENDED: "destructive",
+const STATUS_COLORS: Record<string, string> = {
+    ACTIVE: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
+    INACTIVE: "bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-300",
+    SUSPENDED: "bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300",
 };
 
 export function UserTable({ users }: UserTableProps) {
@@ -105,12 +105,12 @@ export function UserTable({ users }: UserTableProps) {
                             </TableCell>
                             <TableCell className="text-muted-foreground">{user.email}</TableCell>
                             <TableCell>
-                                <Badge variant={ROLE_COLORS[user.role] ?? "secondary"}>
+                                <Badge variant="outline" className={ROLE_COLORS[user.role] ?? "bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-300"}>
                                     {user.role.replace("_", " ")}
                                 </Badge>
                             </TableCell>
                             <TableCell>
-                                <Badge variant={STATUS_COLORS[user.status] ?? "secondary"}>
+                                <Badge variant="outline" className={STATUS_COLORS[user.status] ?? "bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-300"}>
                                     {user.status}
                                 </Badge>
                             </TableCell>

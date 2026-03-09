@@ -1,5 +1,7 @@
 "use server"
 
+import { logAuditEvent } from "@/lib/audit-logger"
+
 import { auth } from "@/lib/auth"
 import { withDb } from "@/lib/db"
 import { z } from "zod"
@@ -117,10 +119,10 @@ export async function createCourse(data: z.infer<typeof courseSchema>) {
             if (existing.rows.length > 0) return { error: "exists" }
 
             const result = await db.query(`
-                INSERT INTO courses (code, name, description, department_id, institution_id, lecturer_id, credit_hours, status, updated_at)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,'ACTIVE',NOW())
+                INSERT INTO courses (id, code, name, description, department_id, institution_id, lecturer_id, credit_hours, status, updated_at)
+                VALUES (gen_random_uuid(),$1,$2,$3,$4,$5,$6,$7,'ACTIVE',NOW())
                 RETURNING id, code, name, status
-            `, [v.code, v.name, v.description ?? null, v.departmentId, v.institutionId, v.lecturerId ?? null, v.creditHours])
+            `, [v.code, v.name, v.description ?? null, v.departmentId, v.institutionId, v.lecturerId ?? '', v.creditHours])
 
             if (!result.rows[0]) return { error: "no rows returned" }
             return result.rows[0]
@@ -130,6 +132,14 @@ export async function createCourse(data: z.infer<typeof courseSchema>) {
             if (row?.error === "exists") return { success: false, error: "Course code already exists" }
             return { success: false, error: "Failed to create course" }
         }
+
+        await logAuditEvent({
+            userId: (await auth())?.user?.id ?? null,
+            action: "CREATE",
+            entityType: "COURSE",
+            entityId: row.id,
+            details: { code: v.code, name: v.name },
+        })
 
         revalidatePath("/dashboard/courses")
         return { success: true, data: row }
@@ -157,6 +167,15 @@ export async function updateCourse(id: string, data: z.infer<typeof updateCourse
         sets.push(`updated_at=NOW()`)
         vals.push(id)
         await withDb(db => db.query(`UPDATE courses SET ${sets.join(", ")} WHERE id=$${idx}`, vals))
+
+        await logAuditEvent({
+            userId: (await auth())?.user?.id ?? null,
+            action: "UPDATE",
+            entityType: "COURSE",
+            entityId: id,
+            details: { updatedFields: Object.keys(v) },
+        })
+
         revalidatePath("/dashboard/courses")
         return { success: true }
     } catch (error) {
@@ -170,6 +189,14 @@ export async function deleteCourse(id: string) {
     await requireAdmin()
     try {
         await withDb(db => db.query("DELETE FROM courses WHERE id=$1", [id]))
+
+        await logAuditEvent({
+            userId: (await auth())?.user?.id ?? null,
+            action: "DELETE",
+            entityType: "COURSE",
+            entityId: id,
+        })
+
         revalidatePath("/dashboard/courses")
         return { success: true }
     } catch (error) {
@@ -255,7 +282,7 @@ export async function getCourseSchedules(courseId: string) {
 }
 
 export async function addCourseSchedule(courseId: string, data: z.infer<typeof scheduleSchema>) {
-    await requireAdmin()
+    const session = await requireAdmin()
     try {
         const v = scheduleSchema.parse(data)
         const row = await withDb(async (db) => {
@@ -265,14 +292,28 @@ export async function addCourseSchedule(courseId: string, data: z.infer<typeof s
                 if (roomRes.rows.length > 0) roomId = roomRes.rows[0].id;
             }
             const result = await db.query(
-                `INSERT INTO schedules (course_id, day_of_week, start_time, end_time, room_id, updated_at)
-                VALUES ($1,$2,$3,$4,$5,NOW())
+                `INSERT INTO schedules (id, course_id, day_of_week, start_time, end_time, room_id, updated_at)
+                VALUES (gen_random_uuid(), $1,$2,$3,$4,$5,NOW())
                 RETURNING id, course_id AS "courseId", day_of_week AS "dayOfWeek",
                 start_time AS "startTime", end_time AS "endTime"`,
                 [courseId, v.dayOfWeek, v.startTime, v.endTime, roomId]
             )
             return { ...result.rows[0], roomName: v.roomName };
         })
+
+        logAuditEvent({
+            userId: session.user.id,
+            userName: session.user.name || "Unknown Admin",
+            action: "UPDATE",
+            entityType: "COURSE",
+            entityId: courseId,
+            details: {
+                action: "Added schedule",
+                dayOfWeek: v.dayOfWeek,
+                time: `${v.startTime}-${v.endTime}`
+            }
+        })
+
         revalidatePath("/dashboard/courses")
         revalidatePath("/dashboard/schedule")
         return { success: true, data: row }

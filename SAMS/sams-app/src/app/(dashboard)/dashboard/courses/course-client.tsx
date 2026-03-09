@@ -252,7 +252,7 @@ export function CourseClient({ initialCourses, lecturers, departments, instituti
                                 <div className="space-y-2">
                                     <Label htmlFor="creditHours">Credit Hours</Label>
                                     <Input id="creditHours" type="number" min={1} max={12}
-                                        value={creditHours} onChange={e => setCreditHours(parseInt(e.target.value))}
+                                        value={creditHours} onChange={e => { const parsed = parseInt(e.target.value); setCreditHours(isNaN(parsed) ? 3 : parsed) }}
                                         disabled={isLoading} />
                                 </div>
                             </div>
@@ -319,19 +319,19 @@ export function CourseClient({ initialCourses, lecturers, departments, instituti
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="bg-primary text-primary-foreground transition-all duration-300 relative overflow-hidden group">
+                <Card className="bg-primary/10 border-primary/30 shadow-sm transition-all duration-300 relative overflow-hidden group">
                     <CardHeader className="pb-2 relative z-10">
-                        <CardTitle className="text-xs font-medium uppercase tracking-wider opacity-80">
+                        <CardTitle className="text-xs font-medium text-primary uppercase tracking-wider">
                             Total Courses
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="relative z-10">
-                        <div className="text-3xl font-bold">{courses.length}</div>
+                        <div className="text-3xl font-bold text-primary">{courses.length}</div>
                     </CardContent>
                 </Card>
                 <Card className="shadow-sm transition-all duration-300 relative overflow-hidden group">
                     <CardHeader className="pb-2 relative z-10">
-                        <CardTitle className="text-xs font-medium uppercase tracking-wider opacity-80">
+                        <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                             Active Courses
                         </CardTitle>
                     </CardHeader>
@@ -341,11 +341,11 @@ export function CourseClient({ initialCourses, lecturers, departments, instituti
                 </Card>
                 <Card className="shadow-sm transition-all duration-300 relative overflow-hidden group">
                     <CardHeader className="pb-2 relative z-10">
-                        <CardTitle className="text-xs font-medium uppercase tracking-wider opacity-80">
+                        <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                             Total Enrollments
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="relative z-10 text-blue-600">
+                    <CardContent className="relative z-10 text-blue-600 dark:text-blue-400">
                         <div className="text-3xl font-bold">{totalStudents}</div>
                     </CardContent>
                 </Card>

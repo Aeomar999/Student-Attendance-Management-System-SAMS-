@@ -71,9 +71,9 @@ export function ReportsClient({ stats, courseStats, atRiskStudents }: Props) {
                     { label: "Face Enrolled", value: stats.faceEnrolledCount, color: "text-blue-600" },
                     { label: "At-Risk Students", value: stats.studentsAtRisk, color: stats.studentsAtRisk > 0 ? "text-destructive" : "text-primary" },
                 ].map((item, i) => (
-                    <Card key={item.label} className={`rounded-xl border flex flex-col justify-center ${i === 0 ? "bg-primary text-primary-foreground" : "border-border/50 bg-card/80 backdrop-blur-sm"} p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300`}>
-                        <div className={`text-[10px] md:text-xs font-medium uppercase tracking-wider ${i === 0 ? "text-white/80" : "text-muted-foreground"}`}>{item.label}</div>
-                        <div className={`mt-1 text-xl md:text-2xl font-bold ${"color" in item ? item.color : ""}`}>{item.value}</div>
+                    <Card key={item.label} className={`rounded-xl border flex flex-col justify-center ${i === 0 ? "bg-primary/10 border-primary/30" : "border-border/50 bg-card/80 backdrop-blur-sm"} p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300`}>
+                        <div className={`text-[10px] md:text-xs font-medium uppercase tracking-wider ${i === 0 ? "text-primary" : "text-muted-foreground"}`}>{item.label}</div>
+                        <div className={`mt-1 text-xl md:text-2xl font-bold ${i === 0 ? "text-primary" : "color" in item ? item.color : ""}`}>{item.value}</div>
                     </Card>
                 ))}
             </div>

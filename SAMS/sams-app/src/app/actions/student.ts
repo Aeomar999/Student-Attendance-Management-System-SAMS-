@@ -1,5 +1,7 @@
 "use server"
 
+import { logAuditEvent } from "@/lib/audit-logger"
+
 import { auth } from "@/lib/auth"
 import { withDb } from "@/lib/db"
 import { z } from "zod"
@@ -60,6 +62,15 @@ export async function createStudent(data: z.infer<typeof studentSchema>) {
             return ins.rows[0]
         })
         if (!result) return { success: false, error: "Email or Student ID already exists" }
+
+        await logAuditEvent({
+            userId: (await auth())?.user?.id ?? null,
+            action: "CREATE",
+            entityType: "STUDENT",
+            entityId: result.id,
+            details: { studentId: v.studentId, email: v.email },
+        })
+
         revalidatePath("/dashboard/students")
         return { success: true, data: result }
     } catch (error) {
@@ -88,6 +99,15 @@ export async function updateStudent(id: string, data: z.infer<typeof updateStude
             vals
         ))
         if (result.rows.length === 0) return { success: false, error: "Student not found" }
+
+        await logAuditEvent({
+            userId: (await auth())?.user?.id ?? null,
+            action: "UPDATE",
+            entityType: "STUDENT",
+            entityId: id,
+            details: { updatedFields: Object.keys(v) },
+        })
+
         revalidatePath("/dashboard/students")
         return { success: true }
     } catch (error) {
@@ -101,6 +121,14 @@ export async function deleteStudent(id: string) {
     await requireAuth()
     try {
         await withDb(db => db.query("DELETE FROM students WHERE id=$1", [id]))
+
+        await logAuditEvent({
+            userId: (await auth())?.user?.id ?? null,
+            action: "DELETE",
+            entityType: "STUDENT",
+            entityId: id,
+        })
+
         revalidatePath("/dashboard/students")
         return { success: true }
     } catch (error) {

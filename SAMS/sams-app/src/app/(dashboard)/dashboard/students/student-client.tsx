@@ -461,14 +461,14 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
 
             {/* Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="bg-primary text-primary-foreground transition-all duration-300 relative overflow-hidden group">
+                <Card className="bg-primary/10 border-primary/30 shadow-sm transition-all duration-300 relative overflow-hidden group">
                     <CardHeader className="pb-2 relative z-10">
-                        <CardTitle className="text-xs font-medium text-white/80 uppercase tracking-wider">
+                        <CardTitle className="text-xs font-medium text-primary uppercase tracking-wider">
                             Total Students
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="relative z-10">
-                        <div className="text-3xl font-bold">{students.length}</div>
+                        <div className="text-3xl font-bold text-primary">{students.length}</div>
                     </CardContent>
                 </Card>
                 <Card className="shadow-sm transition-all duration-300 relative overflow-hidden group">
@@ -490,7 +490,7 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="relative z-10">
-                        <div className="text-3xl font-bold text-yellow-600">{students.length - enrolledCount}</div>
+                        <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">{students.length - enrolledCount}</div>
                     </CardContent>
                 </Card>
             </div>

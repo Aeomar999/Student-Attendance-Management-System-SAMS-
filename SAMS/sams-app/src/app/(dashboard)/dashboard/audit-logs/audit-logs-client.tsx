@@ -25,14 +25,14 @@ import {
 import { getAuditLogs, type AuditLogRow } from "@/app/actions/audit";
 
 const ACTION_COLORS: Record<string, string> = {
-    CREATE: "bg-primary/10 text-primary border-primary/20",
-    UPDATE: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-    DELETE: "bg-destructive/10 text-destructive border-destructive/20",
-    LOGIN: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-    LOGOUT: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
-    FAILED_LOGIN: "bg-destructive/20 text-destructive dark:bg-destructive dark:text-destructive-foreground",
-    SUSPEND: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
-    ACTIVATE: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300",
+    CREATE: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
+    UPDATE: "bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300",
+    DELETE: "bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300",
+    LOGIN: "bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300",
+    LOGOUT: "bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-300",
+    FAILED_LOGIN: "bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300",
+    SUSPEND: "bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-300",
+    ACTIVATE: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
 };
 
 const ALL_ACTIONS = ["CREATE", "UPDATE", "DELETE", "LOGIN", "LOGOUT", "FAILED_LOGIN", "SUSPEND", "ACTIVATE"];

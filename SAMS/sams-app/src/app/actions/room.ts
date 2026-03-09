@@ -1,5 +1,6 @@
 "use server"
 
+import { logAuditEvent } from "@/lib/audit-logger"
 import { auth } from "@/lib/auth"
 import { queryRaw } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
@@ -120,6 +121,14 @@ export async function createRoom(data: {
         return { success: false, error: "Failed to create room" }
     }
 
+    await logAuditEvent({
+        userId: (await auth())?.user?.id ?? null,
+        action: "CREATE",
+        entityType: "ROOM",
+        entityId: result[0].id,
+        details: { name: data.name, building: data.building },
+    })
+
     revalidatePath("/dashboard/rooms")
     return { success: true }
 }
@@ -150,6 +159,14 @@ export async function updateRoom(
         await queryRaw(`UPDATE rooms SET ${sets.join(", ")} WHERE id = $${idx}`, params)
     }
 
+    await logAuditEvent({
+        userId: (await auth())?.user?.id ?? null,
+        action: "UPDATE",
+        entityType: "ROOM",
+        entityId: id,
+        details: { updatedFields: Object.keys(data).filter(k => data[k as keyof typeof data] !== undefined) },
+    })
+
     revalidatePath("/dashboard/rooms")
     revalidatePath(`/dashboard/rooms/${id}`)
     return { success: true }
@@ -175,6 +192,13 @@ export async function deleteRoom(id: string): Promise<{ success: boolean; error?
     }
 
     await queryRaw(`DELETE FROM rooms WHERE id = $1`, [id])
+
+    await logAuditEvent({
+        userId: (await auth())?.user?.id ?? null,
+        action: "DELETE",
+        entityType: "ROOM",
+        entityId: id,
+    })
 
     revalidatePath("/dashboard/rooms")
     return { success: true }

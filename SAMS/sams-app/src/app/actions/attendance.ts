@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 import { withDb } from "@/lib/db"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
+import { logAuditEvent } from "@/lib/audit-logger"
 
 const sessionSchema = z.object({
     courseId: z.string().min(1, "Course is required"),
@@ -152,6 +153,15 @@ export async function createAttendanceSession(data: z.infer<typeof sessionSchema
             `, [v.courseId, lecturerId, v.sessionDate, startDt.toISOString(), null, v.gracePeriod])
             return result.rows[0]
         })
+
+        await logAuditEvent({
+            userId: lecturerId,
+            action: "CREATE",
+            entityType: "ATTENDANCE_SESSION",
+            entityId: row.id,
+            details: { message: `Created attendance session for course ${v.courseId}` }
+        })
+
         revalidatePath("/dashboard/attendance")
         return { success: true, data: row }
     } catch (error) {
@@ -166,7 +176,7 @@ export async function createAttendanceSession(data: z.infer<typeof sessionSchema
 }
 
 export async function closeAttendanceSession(sessionId: string) {
-    await requireAuth()
+    const authSession = await requireAuth()
     try {
         await withDb(async (db) => {
             const present = await db.query(
@@ -183,6 +193,15 @@ export async function closeAttendanceSession(sessionId: string) {
                 [parseInt(present.rows[0].count), parseInt(absent.rows[0].count), sessionId]
             )
         })
+
+        await logAuditEvent({
+            userId: authSession.user?.id || null,
+            action: "UPDATE",
+            entityType: "ATTENDANCE_SESSION",
+            entityId: sessionId,
+            details: { message: `Closed attendance session ${sessionId}` }
+        })
+
         revalidatePath("/dashboard/attendance")
         return { success: true }
     } catch (error) {

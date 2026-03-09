@@ -117,15 +117,16 @@
   --background: #09090b;
   --foreground: #fafafa;
 
-  --card: #09090b;
+  --card: #141417;
+  /* slightly lighter than background for depth */
   --card-foreground: #fafafa;
 
-  --popover: #09090b;
+  --popover: #141417;
   --popover-foreground: #fafafa;
 
-  /* Default shadcn primary (white in dark mode) */
-  --primary: #fafafa;
-  --primary-foreground: #18181b;
+  /* Softened primary (off-white instead of pure white) */
+  --primary: #e4e4e7;
+  --primary-foreground: #09090b;
 
   /* Default shadcn secondary (zinc) */
   --secondary: #27272a;
@@ -164,12 +165,12 @@
   .mobile-dark-theme {
     --background: #09090b;
     --foreground: #fafafa;
-    --card: #09090b;
+    --card: #141417;
     --card-foreground: #fafafa;
-    --popover: #09090b;
+    --popover: #141417;
     --popover-foreground: #fafafa;
-    --primary: #fafafa;
-    --primary-foreground: #18181b;
+    --primary: #e4e4e7;
+    --primary-foreground: #09090b;
     --secondary: #27272a;
     --secondary-foreground: #fafafa;
     --muted: #27272a;

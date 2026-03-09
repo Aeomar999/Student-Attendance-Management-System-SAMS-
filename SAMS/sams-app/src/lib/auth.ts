@@ -93,6 +93,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                         if (lockUntil) {
                             console.warn(`[SAMS Auth] Account locked after ${newAttempts} failures: ${user.email}`);
                         }
+
+                        // Audit: failed login
+                        await withRawClient(async (auditClient) => {
+                            await auditClient.query(
+                                `INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, details, created_at)
+                                 VALUES (gen_random_uuid(), $1, 'FAILED_LOGIN', 'USER', $1, $2, NOW())`,
+                                [user.id, JSON.stringify({ email: user.email, attempt: newAttempts })]
+                            );
+                        });
+
                         return null;
                     }
 
@@ -101,6 +111,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                         await client.query(
                             `UPDATE users SET failed_attempts = 0, locked_until = NULL, last_login_at = NOW(), updated_at = NOW() WHERE id = $1`,
                             [user.id]
+                        );
+                    });
+
+                    // Audit: successful login
+                    await withRawClient(async (auditClient) => {
+                        await auditClient.query(
+                            `INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, details, created_at)
+                             VALUES (gen_random_uuid(), $1, 'LOGIN', 'USER', $1, $2, NOW())`,
+                            [user.id, JSON.stringify({ email: user.email })]
                         );
                     });
 

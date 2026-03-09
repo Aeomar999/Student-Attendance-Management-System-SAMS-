@@ -234,14 +234,14 @@ const recordStatusIcon = (status: string) => {
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <Card className="bg-primary text-primary-foreground transition-all duration-300">
+                <Card className="bg-primary/10 border-primary/30 shadow-sm transition-all duration-300">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-medium text-white/80 uppercase tracking-wider">
+                        <CardTitle className="text-xs font-medium text-primary uppercase tracking-wider">
                             Total Sessions
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{stats.totalSessions}</div>
+                        <div className="text-3xl font-bold text-primary">{stats.totalSessions}</div>
                     </CardContent>
                 </Card>
                 <Card className="shadow-sm transition-all duration-300">
@@ -250,7 +250,7 @@ const recordStatusIcon = (status: string) => {
                             Attendance Rate
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className={stats.attendanceRate >= 75 ? "text-primary" : "text-yellow-600"}>
+                    <CardContent className={stats.attendanceRate >= 75 ? "text-primary" : "text-amber-600 dark:text-amber-400"}>
                         <div className="text-3xl font-bold">{stats.attendanceRate}%</div>
                     </CardContent>
                 </Card>

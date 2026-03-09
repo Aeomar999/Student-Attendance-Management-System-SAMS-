@@ -1,5 +1,6 @@
 "use server"
 
+import { logAuditEvent } from "@/lib/audit-logger"
 import { auth } from "@/lib/auth"
 import { queryRaw } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
@@ -60,10 +61,10 @@ export async function getDepartments(institutionId?: string): Promise<Department
         institutionId: d.institution_id,
         institutionName: d.institution_name ?? undefined,
         createdAt: d.created_at,
-        _count: { 
-            users: d.user_count ?? 0, 
-            students: d.student_count ?? 0, 
-            courses: d.course_count ?? 0 
+        _count: {
+            users: d.user_count ?? 0,
+            students: d.student_count ?? 0,
+            courses: d.course_count ?? 0
         },
     }))
 }
@@ -99,10 +100,10 @@ export async function getDepartmentById(id: string): Promise<DepartmentRow | nul
         institutionId: d.institution_id,
         institutionName: d.institution_name ?? undefined,
         createdAt: d.created_at,
-        _count: { 
-            users: d.user_count ?? 0, 
-            students: d.student_count ?? 0, 
-            courses: d.course_count ?? 0 
+        _count: {
+            users: d.user_count ?? 0,
+            students: d.student_count ?? 0,
+            courses: d.course_count ?? 0
         },
     }
 }
@@ -137,6 +138,14 @@ export async function createDepartment(data: {
         return { success: false, error: "Failed to create department" }
     }
 
+    await logAuditEvent({
+        userId: (await auth())?.user?.id ?? null,
+        action: "CREATE",
+        entityType: "DEPARTMENT",
+        entityId: result[0].id,
+        details: { name: data.name, code: data.code },
+    })
+
     revalidatePath("/dashboard/departments")
     return { success: true }
 }
@@ -164,6 +173,14 @@ export async function updateDepartment(
         await queryRaw(`UPDATE departments SET ${sets.join(", ")} WHERE id = $${idx}`, params)
     }
 
+    await logAuditEvent({
+        userId: (await auth())?.user?.id ?? null,
+        action: "UPDATE",
+        entityType: "DEPARTMENT",
+        entityId: id,
+        details: { updatedFields: Object.keys(data).filter(k => data[k as keyof typeof data] !== undefined) },
+    })
+
     revalidatePath("/dashboard/departments")
     revalidatePath(`/dashboard/departments/${id}`)
     return { success: true }
@@ -188,6 +205,13 @@ export async function deleteDepartment(id: string): Promise<{ success: boolean; 
     }
 
     await queryRaw(`DELETE FROM departments WHERE id = $1`, [id])
+
+    await logAuditEvent({
+        userId: (await auth())?.user?.id ?? null,
+        action: "DELETE",
+        entityType: "DEPARTMENT",
+        entityId: id,
+    })
 
     revalidatePath("/dashboard/departments")
     return { success: true }
