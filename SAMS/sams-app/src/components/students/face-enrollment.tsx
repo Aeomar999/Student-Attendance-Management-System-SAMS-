@@ -26,6 +26,7 @@ export function FaceEnrollment({ onComplete, onCancel }: FaceEnrollmentProps) {
     const [isStarted, setIsStarted] = useState(false);
     const [currentState, setCurrentState] = useState<CaptureState>("CENTER");
     const [capturedImages, setCapturedImages] = useState<string[]>([]);
+    const [cameraError, setCameraError] = useState<string | null>(null);
     
     // Progress calculation for the 60 ticks
     // If not started, progress is 0.
@@ -132,14 +133,40 @@ export function FaceEnrollment({ onComplete, onCancel }: FaceEnrollmentProps) {
                     ) : (
                         /* Webcam Feed + Circular Mask + 3D Overlay */
                         <div className="absolute w-[200px] h-[200px] rounded-full overflow-hidden bg-zinc-900 border-[0.5px] border-zinc-800 z-10 flex items-center justify-center">
-                            <Webcam
-                                audio={false}
-                                ref={webcamRef}
-                                screenshotFormat="image/jpeg"
-                                videoConstraints={{ facingMode: "user" }}
-                                className="w-[120%] h-[120%] max-w-none object-cover transform scale-x-[-1]"
-                                mirrored={true}
-                            />
+                            {cameraError ? (
+                                <div className="text-center p-4">
+                                    <p className="text-red-400 text-sm font-medium mb-1">Camera Error</p>
+                                    <p className="text-xs text-zinc-400">{cameraError}</p>
+                                </div>
+                            ) : (
+                                <Webcam
+                                    audio={false}
+                                    ref={webcamRef}
+                                    screenshotFormat="image/jpeg"
+                                    videoConstraints={{ 
+                                        facingMode: "user",
+                                        width: { ideal: 720 },
+                                        height: { ideal: 720 }
+                                    }}
+                                    className="w-[120%] h-[120%] max-w-none object-cover transform scale-x-[-1]"
+                                    mirrored={true}
+                                    onUserMediaError={(err: string | DOMException) => {
+                                        console.error("Webcam Error:", err);
+                                        const errName = typeof err === 'string' ? err : err.name;
+                                        if (errName === 'NotAllowedError' || errName === 'PermissionDeniedError') {
+                                            setCameraError("Please allow camera access in your browser settings to continue.");
+                                        } else if (errName === 'NotFoundError' || errName === 'DevicesNotFoundError') {
+                                            setCameraError("No camera found. Please ensure your device has a working camera.");
+                                        } else if (errName === 'NotReadableError' || errName === 'TrackStartError') {
+                                            setCameraError("Camera is already in use by another application.");
+                                        } else {
+                                            setCameraError("Could not access camera. Please check your permissions.");
+                                        }
+                                    }}
+                                    playsInline // Crucial for iOS/Safari
+                                    muted // Crucial for autoplay policies on mobile
+                                />
+                            )}
                             
                             {/* Blue 3D overlay (approximating the screenshot) */}
                             <svg className="absolute lg:inset-0 w-full h-full pointer-events-none z-30 opacity-70" viewBox="0 0 100 100">
