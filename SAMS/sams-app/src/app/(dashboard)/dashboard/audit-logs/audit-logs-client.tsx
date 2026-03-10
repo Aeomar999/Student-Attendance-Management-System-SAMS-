@@ -177,16 +177,31 @@ export function AuditLogsClient({
                                     </TableCell>
                                     <TableCell className="text-sm">
                                         {log.entityType && (
-                                            <span>
-                                                <Badge variant="outline" className="text-xs mr-1">{log.entityType}</Badge>
-                                                <span className="font-mono text-xs text-muted-foreground">
-                                                    {log.entityId?.slice(0, 8)}…
-                                                </span>
-                                            </span>
+                                            <Badge variant="outline" className="text-xs">{log.entityType.replace('_', ' ')}</Badge>
                                         )}
                                     </TableCell>
-                                    <TableCell className="text-xs text-muted-foreground max-w-xs truncate">
-                                        {log.details ? JSON.stringify(log.details) : "—"}
+                                    <TableCell className="max-w-md">
+                                        {log.details && typeof log.details === 'object' ? (
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {Object.entries(log.details).map(([key, value]) => {
+                                                    let displayValue = String(value);
+                                                    if (Array.isArray(value)) {
+                                                        displayValue = `[${value.join(", ")}]`;
+                                                    } else if (typeof value === "object" && value !== null) {
+                                                        displayValue = JSON.stringify(value);
+                                                    }
+                                                    
+                                                    return (
+                                                        <div key={key} className="inline-flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded text-[11px] border border-border/50 max-w-[200px]" title={displayValue}>
+                                                            <span className="font-semibold text-foreground/80 whitespace-nowrap">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
+                                                            <span className="text-muted-foreground truncate">{displayValue}</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <span className="text-muted-foreground">—</span>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))

@@ -78,7 +78,21 @@ export async function getAuditLogs({
             ])
 
             return {
-                logs: rows.rows as AuditLogRow[],
+                logs: rows.rows.map(row => {
+                    let parsedDetails = null;
+                    if (row.details) {
+                        try {
+                            parsedDetails = typeof row.details === 'string' ? JSON.parse(row.details) : row.details;
+                        } catch (e) {
+                            console.error("Failed to parse audit log details:", e);
+                            parsedDetails = { raw: row.details };
+                        }
+                    }
+                    return {
+                        ...row,
+                        details: parsedDetails
+                    } as AuditLogRow;
+                }),
                 total: countResult.rows[0]?.total ?? 0,
             }
         })

@@ -73,8 +73,8 @@ export function StudentClient({
     const [studentId, setStudentId] = useState("");
     const [yearOfStudy, setYearOfStudy] = useState(1);
     const [program, setProgram] = useState("");
-    const [institutionId, setInstitutionId] = useState("INST-001");
-    const [departmentId, setDepartmentId] = useState("DEPT-CS");
+    const [institutionId, setInstitutionId] = useState("06aeb9ae-11c6-4954-8d64-0f9e11b8f770");
+    const [departmentId, setDepartmentId] = useState("a77556bb-7492-4e1b-93e6-cccf82d8ed96");
 
     // Face Capture states
     const [isCapturing, setIsCapturing] = useState(false);
@@ -87,8 +87,8 @@ export function StudentClient({
         setStudentId("");
         setYearOfStudy(1);
         setProgram("");
-        setInstitutionId("INST-001");
-        setDepartmentId("DEPT-CS");
+        setInstitutionId("06aeb9ae-11c6-4954-8d64-0f9e11b8f770");
+        setDepartmentId("a77556bb-7492-4e1b-93e6-cccf82d8ed96");
         setEditingStudent(null);
         setIsCapturing(false);
         setFaceImages([]);
@@ -483,6 +483,7 @@ STU003,Bob,Johnson,bob.johnson@example.com,Mathematics,3`}
                 <StudentTable 
                     students={students as any} 
                     onEdit={(student) => handleOpenEdit(student as any)} 
+                    onOpenNew={handleOpenNew}
                 />
                 {/* eslint-enable @typescript-eslint/no-explicit-any */}
             </div>

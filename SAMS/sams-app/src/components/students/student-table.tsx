@@ -28,7 +28,6 @@ import {
 import { MoreHorizontal, Trash2, ScanFace, ChevronLeft, ChevronRight, Search, ArrowUpDown, Plus, Edit } from "lucide-react";
 import { deleteStudent } from "@/actions/students";
 import { toast } from "sonner";
-import Link from "next/link";
 
 interface Student {
     id: string;
@@ -46,6 +45,7 @@ interface Student {
 interface StudentTableProps {
     students: Student[];
     onEdit?: (student: Student) => void;
+    onOpenNew?: () => void;
 }
 
 type SortField = "studentId" | "firstName" | "lastName" | "email" | "program" | "yearOfStudy" | "status" | "faceEnrolled";
@@ -117,7 +117,7 @@ const StudentRow = memo(function StudentRow({
     );
 });
 
-export function StudentTable({ students, onEdit }: StudentTableProps) {
+export function StudentTable({ students, onEdit, onOpenNew }: StudentTableProps) {
     const [isPending, startTransition] = useTransition();
     const [page, setPage] = useState(0);
     const [searchTerm, setSearchTerm] = useState("");
@@ -217,12 +217,12 @@ export function StudentTable({ students, onEdit }: StudentTableProps) {
                     <p className="text-lg font-medium">No students found</p>
                     <p className="text-sm text-muted-foreground">Get started by adding your first student.</p>
                 </div>
-                <Link href="/dashboard/students/new">
-                    <Button>
+                {onOpenNew && (
+                    <Button onClick={onOpenNew}>
                         <Plus className="mr-2 h-4 w-4" />
                         Add Student
                     </Button>
-                </Link>
+                )}
             </div>
         );
     }
@@ -272,12 +272,12 @@ export function StudentTable({ students, onEdit }: StudentTableProps) {
                             Clear filters
                         </Button>
                     )}
-                    <Link href="/dashboard/students/new">
-                        <Button size="sm">
+                    {onOpenNew && (
+                        <Button size="sm" onClick={onOpenNew}>
                             <Plus className="mr-2 h-4 w-4" />
                             Add Student
                         </Button>
-                    </Link>
+                    )}
                 </div>
             </div>
             

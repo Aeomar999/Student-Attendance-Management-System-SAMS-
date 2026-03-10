@@ -288,7 +288,7 @@ export async function getStudentAttendanceHistory(studentId: string) {
             const [student, summary, records] = await Promise.all([
                 db.query(
                     `SELECT id, student_id AS "studentRefId", first_name AS "firstName", last_name AS "lastName",
-                    email, face_enrolled AS "faceEnrolled", status, consent_given AS "consentGiven"
+                    email, face_enrolled AS "faceEnrolled", status
                     FROM students WHERE id=$1`,
                     [studentId]
                 ),
@@ -308,7 +308,6 @@ export async function getStudentAttendanceHistory(studentId: string) {
                         ar.status,
                         ar.recognized_at AS "recognizedAt",
                         ar.is_manual AS "isManual",
-                        ar.manual_reason AS "manualReason",
                         ar.confidence_score AS "confidenceScore",
                         s.id AS "sessionId",
                         s.session_date AS "sessionDate",
