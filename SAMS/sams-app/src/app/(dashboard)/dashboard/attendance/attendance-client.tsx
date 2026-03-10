@@ -2,7 +2,7 @@
 
 import { useState, Fragment } from "react"
 import Link from "next/link"
-import { CalendarCheck, Plus, CheckCircle2, XCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ExternalLink } from "lucide-react"
+import { CalendarCheck, Plus, CheckCircle2, XCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ExternalLink, Video } from "lucide-react"
 import { toast } from "sonner"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
@@ -332,13 +332,20 @@ const recordStatusIcon = (status: string) => {
                                     <TableCell className="text-right">
                                         <div className="flex justify-end items-center gap-2" onClick={e => e.stopPropagation()}>
                                             {session.status === "ACTIVE" && (
-<Button
-                                                    size="sm" variant="outline"
-                                                    onClick={() => handleCloseSession(session.id)}
-                                                    disabled={isLoading}
-                                                >
-                                                    Close Session
-                                                </Button>
+                                                <>
+                                                    <Link href={`/dashboard/attendance/live/${session.id}`}>
+                                                        <Button size="sm" className="gap-1 bg-green-600 hover:bg-green-700">
+                                                            <Video className="h-3 w-3" /> Live
+                                                        </Button>
+                                                    </Link>
+                                                    <Button
+                                                        size="sm" variant="outline"
+                                                        onClick={() => handleCloseSession(session.id)}
+                                                        disabled={isLoading}
+                                                    >
+                                                        Close Session
+                                                    </Button>
+                                                </>
                                             )}
                                             <Link href={`/dashboard/attendance/${session.id}`}>
                                                 <Button size="sm" variant="ghost" className="gap-1">

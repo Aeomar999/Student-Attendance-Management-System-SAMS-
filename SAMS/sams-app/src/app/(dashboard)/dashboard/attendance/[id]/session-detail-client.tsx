@@ -20,6 +20,16 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import * as XLSX from "xlsx"
@@ -60,6 +70,8 @@ interface Props {
 export function SessionDetailClient({ session, records: initialRecords }: Props) {
     const [records, setRecords] = useState(initialRecords)
     const [updatingId, setUpdatingId] = useState<string | null>(null)
+    const [overrideData, setOverrideData] = useState<{ studentId: string, status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED", studentName: string } | null>(null)
+    const [overrideReason, setOverrideReason] = useState("")
 
     const statusCounts = {
         PRESENT: records.filter(r => r.status === "PRESENT").length,
@@ -68,7 +80,7 @@ export function SessionDetailClient({ session, records: initialRecords }: Props)
         EXCUSED: records.filter(r => r.status === "EXCUSED").length,
     }
 
-const statusIcon = (status: string) => {
+    const statusIcon = (status: string) => {
         switch (status) {
             case "PRESENT": return <CheckCircle2 className="h-4 w-4 text-primary" />
             case "ABSENT": return <XCircle className="h-4 w-4 text-destructive" />
@@ -78,7 +90,7 @@ const statusIcon = (status: string) => {
         }
     }
 
-const statusColor = (status: string) => {
+    const statusColor = (status: string) => {
         switch (status) {
             case "PRESENT": return "bg-primary/10 text-primary border-primary/20"
             case "ABSENT": return "bg-destructive/10 text-destructive border-destructive/20"
@@ -88,10 +100,10 @@ const statusColor = (status: string) => {
         }
     }
 
-    async function handleStatusChange(studentId: string, newStatus: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED") {
+    async function handleStatusChange(studentId: string, newStatus: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED", reason?: string) {
         setUpdatingId(studentId)
         try {
-            const result = await markAttendance(session.id, studentId, newStatus, "Manual override from session detail")
+            const result = await markAttendance(session.id, studentId, newStatus, reason || undefined)
             if (result.success) {
                 setRecords(prev => prev.map(r =>
                     r.studentId === studentId ? { ...r, status: newStatus, isManual: true } : r
@@ -179,7 +191,6 @@ const statusColor = (status: string) => {
 
     return (
         <div className="space-y-6">
-            {/* Back link + Header */}
             <div className="flex items-center gap-3">
                 <Link href="/dashboard/attendance">
                     <Button variant="ghost" size="icon"><ArrowLeft className="h-4 w-4" /></Button>
@@ -201,10 +212,9 @@ const statusColor = (status: string) => {
                 </Badge>
             </div>
 
-            {/* Summary Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
-{ label: "Present", count: statusCounts.PRESENT, icon: CheckCircle2, color: "text-primary", bg: "bg-primary/10" },
+                    { label: "Present", count: statusCounts.PRESENT, icon: CheckCircle2, color: "text-primary", bg: "bg-primary/10" },
                     { label: "Absent", count: statusCounts.ABSENT, icon: XCircle, color: "text-destructive", bg: "bg-destructive/10" },
                     { label: "Late", count: statusCounts.LATE, icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" },
                     { label: "Excused", count: statusCounts.EXCUSED, icon: AlertCircle, color: "text-blue-600", bg: "bg-blue-50" },
@@ -223,7 +233,6 @@ const statusColor = (status: string) => {
                 ))}
             </div>
 
-            {/* Actions */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <UserCheck className="h-4 w-4" />
@@ -243,7 +252,6 @@ const statusColor = (status: string) => {
                 </DropdownMenu>
             </div>
 
-            {/* Records Table */}
             <Card className="overflow-hidden shadow-sm">
                 <Table>
                     <TableHeader>
@@ -292,10 +300,15 @@ const statusColor = (status: string) => {
                                 <TableCell className="text-right">
                                     <Select
                                         value={record.status}
-                                        onValueChange={(val) => handleStatusChange(
-                                            record.studentId,
-                                            val as "PRESENT" | "ABSENT" | "LATE" | "EXCUSED"
-                                        )}
+                                        onValueChange={(val) => {
+                                            const newStatus = val as "PRESENT" | "ABSENT" | "LATE" | "EXCUSED"
+                                            if (newStatus === "PRESENT") {
+                                                handleStatusChange(record.studentId, newStatus)
+                                            } else {
+                                                setOverrideData({ studentId: record.studentId, status: newStatus, studentName: record.studentName })
+                                                setOverrideReason("")
+                                            }
+                                        }}
                                         disabled={updatingId === record.studentId}
                                     >
                                         <SelectTrigger className="w-[110px] h-8 text-xs rounded-full">
@@ -314,6 +327,42 @@ const statusColor = (status: string) => {
                     </TableBody>
                 </Table>
             </Card>
+
+            {/* Manual Override Dialog */}
+            <Dialog open={!!overrideData} onOpenChange={(open) => !open && setOverrideData(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Manual Attendance Override</DialogTitle>
+                        <DialogDescription>
+                            Please provide a reason for marking {overrideData?.studentName} as <strong className="lowercase">{overrideData?.status}</strong>.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Label htmlFor="reason" className="text-sm font-medium">Reason for override</Label>
+                        <Input
+                            id="reason"
+                            value={overrideReason}
+                            onChange={(e) => setOverrideReason(e.target.value)}
+                            placeholder="e.g. Doctor's note, transportation issue..."
+                            className="mt-2"
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setOverrideData(null)}>Cancel</Button>
+                        <Button 
+                            onClick={() => {
+                                if (overrideData) {
+                                    handleStatusChange(overrideData.studentId, overrideData.status, overrideReason)
+                                    setOverrideData(null)
+                                }
+                            }}
+                            disabled={!overrideReason.trim()}
+                        >
+                            Confirm Update
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>            
         </div>
     )
 }
